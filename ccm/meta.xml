@@ -1,0 +1,16 @@
+<meta>
+    <script src="s_copy.lua" type="server"></script>
+    <script src="s_autoupdate.lua" type="server"></script>
+
+    <script src="util.lua" type="client"></script>
+    <script src="c_copy.lua" type="client"></script>
+    <script src="c_main_gui.lua" type="client"></script>
+
+    <aclrequest>
+        <right name="function.fetchRemote" access="true" />
+		<right name="function.restartResource" access="true" />
+        <right name="general.ModifyOtherObjects" access="true" />
+    </aclrequest>
+
+    <include resource="dgs"/>
+</meta>

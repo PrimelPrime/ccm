@@ -1,0 +1,3 @@
+[submodule "dgs"]
+	path = dgs
+	url = https://github.com/thisdp/dgs.git
