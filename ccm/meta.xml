@@ -8,7 +8,7 @@
 
     <aclrequest>
         <right name="function.fetchRemote" access="true" />
-		<right name="function.restartResource" access="true" />
+	<right name="function.restartResource" access="true" />
         <right name="general.ModifyOtherObjects" access="true" />
     </aclrequest>
 
