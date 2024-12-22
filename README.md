@@ -25,6 +25,7 @@
 An easy tool to add NPC-like moving vehicles to your maps without having to write them yourself!
 
 ## CCM - Showcase
+[![CCM Showcase](https://img.youtube.com/vi/__IljIxGlQg/0.jpg)](https://www.youtube.com/watch?v=__IljIxGlQg "Video Title")
 
 ## Installation
 > Press the green button on the top right that shows "Code"
