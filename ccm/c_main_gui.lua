@@ -447,8 +447,8 @@ function createMainGuiMenu()
                 local vehicleID = tonumber(arguments.vehicleID) or "411"
                 local heightOffset = tonumber(arguments.heightOffset) or "0"
                 local destroyVehicle = (arguments.destroyVehicle == true or arguments.destroyVehicle == false) and arguments.destroyVehicle or false
-                local searchlightFollowsPlayer = (arguments.searchlightFollowsPlayer == true or arguments.searchlightFollowsPlayer == false) and arguments.searchlightFollowsPlayer or false
                 local sirenLights = (arguments.sirenLights == true or arguments.sirenLights == false) and arguments.sirenLights or false
+                local searchlightFollowsPlayer = (arguments.searchlightFollowsPlayer == true or arguments.searchlightFollowsPlayer == false) and arguments.searchlightFollowsPlayer or false
                 local searchlightOffset = type(arguments.searchlightOffset) == "table" and arguments.searchlightOffset or {"0", "0", "0"}
                 local adjustableProperty = (arguments.adjustableProperty == true or arguments.adjustableProperty == false) and arguments.adjustableProperty or false
                 local adjPropValue = tonumber(arguments.adjPropValue) or "0"
@@ -469,8 +469,8 @@ function createMainGuiMenu()
                     path,
                     heightOffset,
                     tostring(destroyVehicle),
-                    tostring(searchlightFollowsPlayer),
                     tostring(sirenLights),
+                    tostring(searchlightFollowsPlayer),
                     tonumber(searchlightOffset[1]) or 0,
                     tonumber(searchlightOffset[2]) or 0,
                     tonumber(searchlightOffset[3]) or 0,
