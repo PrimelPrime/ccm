@@ -298,7 +298,7 @@ function createMainGuiMenu()
     --maps gridlist and searchbar
     mapsGridList = DGS:dgsCreateGridList(declare.marginLeft, declare.marginTop + declare.height + declare.spacing, declare.width * 1.25, declare.height * 5, false, pathsMenu)
     searchBar = DGS:dgsCreateEdit(declare.marginLeft, declare.marginTop, declare.width - declare.spacing - declare.marginRight * 2, declare.height, "Search for your map", false, pathsMenu)
-    saveButton = DGS:dgsCreateButton(declare.marginLeft, declare.marginTop * 3 + declare.height * 7 + declare.spacing * 4, (declare.width * 1.25), declare.height, "Save to resource", false, pathsMenu)
+    saveButton = DGS:dgsCreateButton(declare.marginLeft, declare.marginTop * 3 + declare.height * 7 + declare.spacing * 4, (declare.width * 1.25), declare.height, "Save to map/resource", false, pathsMenu)
     local saveButtonTooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
     DGS:dgsTooltipApplyTo(saveButtonTooltip, saveButton, "Saves the current memo content to the selected map. You need to select a map before you can save.\nNote: This will create everything necessary inside your map folder. One click and you are done!\n<font color='#FF0000'>Disclaimer: this might take a lot longer on slower servers!")
 
