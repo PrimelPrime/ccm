@@ -31,7 +31,9 @@ An easy tool to add NPC-like moving vehicles to your maps without having to writ
 
 > Select "Download ZIP" (Alternativley you can choose to go to releases and select the version you want to download)
 
-> Extract both folders "dgs" and "ccm" to "YOUR_INSTALLATION_PATH\MTA San Andreas 1.6\server\mods\deathmatch\resources..."
+> Extract to "YOUR_INSTALLATION_PATH\MTA San Andreas 1.6\server\mods\deathmatch\resources..."
+
+> Next click on "dgs @ 1c4e6a3" and follow the same process as above (Note: you will have to rename the directory to dgs in order to make it work!)
 
 > Start your server and the resource "/start ccm"
 
