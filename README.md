@@ -41,6 +41,6 @@ An easy tool to add NPC-like moving vehicles to your maps without having to writ
 
 > Enjoy!
 
-##Version 1.0
+## Version 1.0
 
 Initial release
