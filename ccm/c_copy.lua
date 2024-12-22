@@ -228,8 +228,8 @@ function cMemoFPlayer()
 
     if infoEnabled then
         outputChatBox("")
-        outputChatBox("Press #FF0000B #FFFFFFto copy an element to the Memo Clipboard.\nPress #FF0000V #FFFFFFto open the Clipboard.", 255, 255, 255, true)
-        outputChatBox("Press #FF0000L #FFFFFFto start/stop recording paths.", 255, 255, 255, true)
+        outputChatBox("Press #FF0000: " .. copyKey .. "#FFFFFFto copy an element to the Memo Clipboard.\nPress #FF0000V #FFFFFFto open the Clipboard.", 255, 255, 255, true)
+        outputChatBox("Press #FF0000N #FFFFFFto start/stop recording paths.", 255, 255, 255, true)
     end
 
     local screenWidth, screenHeight = guiGetScreenSize()

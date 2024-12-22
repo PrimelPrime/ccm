@@ -164,12 +164,10 @@ function createMainGuiMenu()
                     if not pedID then
                         DGS:dgsSetText(argumentEdit, tostring(getElementModel(localPlayer)))
                     end
-                elseif argumentName == "vehicleID" then
+                elseif argumentName == "vehicleID" and playerVehicle then
                     local vehicleID = tonumber(DGS:dgsGetText(argumentEdit))
-                    if not vehicleID and playerVehicle then
+                    if not vehicleID then
                         DGS:dgsSetText(argumentEdit, tostring(getElementModel(playerVehicle)))
-                    else
-                        DGS:dgsSetText(argumentEdit, argumentText)
                     end
                 elseif argumentType == "float" or argumentType == "integer" then
                     local value = tonumber(DGS:dgsGetText(argumentEdit))
