@@ -33,7 +33,7 @@ function queueGitRepo() -- starting sequence
 		return 
 	end
 	
-	fetchRemote("https://api.github.com/repos/primelprime/ccm/contents", function(response, err)
+	fetchRemote("https://api.github.com/repos/primelprime/ccm/contents/ccm", function(response, err)
 	
 		if response == "ERROR" then
 			outputDebugString("[CCM]: Resource failed to fetch for updates, returned "..tostring(response).." with code: "..tostring(err), 0, 255, 100, 100)
