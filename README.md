@@ -44,6 +44,9 @@ An easy tool to add NPC-like moving vehicles to your maps without having to writ
 
 > Enjoy!
 
-## Version 1.0
+## Version 1.0.1
+Reworked the override functionality to now delete all existing files in the paths folder
+fixed some minor typos
 
+## Version 1.0.0
 Initial release
