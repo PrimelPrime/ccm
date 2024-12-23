@@ -414,16 +414,15 @@ function createMainGuiMenu()
 
         local path = DGS:dgsComboBoxGetItemText(pathsComboBox, selectedPath)
         local marker = DGS:dgsGridListGetItemText(markerGridList, selectedMarker, 1)
-
         local currentText = DGS:dgsGetText(mainMemo)
-
+        
         local markerValue = "marker"
         local markerString = ""
         for _, m in ipairs(markers) do
             if m.displayText == marker then
                 markerString = string.format(
                     'local %s = createMarker(%f, %f, %f, "corona", 10, 0, 0, 0, 0)',
-                    m.id,
+                    m.id:gsub("[%s%(%)]", ""),
                     m.position.x,
                     m.position.y,
                     m.position.z
