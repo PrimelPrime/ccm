@@ -157,9 +157,8 @@ function createMainGuiMenu()
             addEventHandler("onDgsBlur", argumentEdit, function()
                 DGS:dgsSetInputMode("allow_binds")
                 local playerVehicle = getPedOccupiedVehicle(localPlayer)
-                if DGS:dgsGetText(argumentEdit) == "" then
-                    DGS:dgsSetText(argumentEdit, argumentText)
-                elseif argumentName == "pedID" then
+                local empty = DGS:dgsGetText(argumentEdit) == ""
+                if argumentName == "pedID" then
                     local pedID = tonumber(DGS:dgsGetText(argumentEdit))
                     if not pedID then
                         DGS:dgsSetText(argumentEdit, tostring(getElementModel(localPlayer)))
@@ -171,9 +170,11 @@ function createMainGuiMenu()
                     end
                 elseif argumentType == "float" or argumentType == "integer" then
                     local value = tonumber(DGS:dgsGetText(argumentEdit))
-                    if not value then
+                    if not value or empty then
                         DGS:dgsSetText(argumentEdit, argumentText)
                     end
+                elseif empty then
+                    DGS:dgsSetText(argumentEdit, argumentText)
                 else return end
             end, false)
         elseif argumentType == "boolean" then
@@ -300,7 +301,7 @@ function createMainGuiMenu()
     searchBar = DGS:dgsCreateEdit(declare.marginLeft, declare.marginTop, declare.width - declare.spacing - declare.marginRight * 2, declare.height, "Search for your map", false, pathsMenu)
     saveButton = DGS:dgsCreateButton(declare.marginLeft, declare.marginTop * 3 + declare.height * 7 + declare.spacing * 4, (declare.width * 1.25), declare.height, "Save to map/resource", false, pathsMenu)
     local saveButtonTooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
-    DGS:dgsTooltipApplyTo(saveButtonTooltip, saveButton, "Saves the current memo content to the selected map. You need to select a map before you can save.\nNote: This will create everything necessary inside your map folder. One click and you are done!\n<font color='#FF0000'>Disclaimer: this might take a lot longer on slower servers!")
+    DGS:dgsTooltipApplyTo(saveButtonTooltip, saveButton, "Saves the current memo content to the selected map. You need to select a map before you can save.\nNote: This will create everything necessary inside your map folder. One click and you are done!\nDisclaimer: this might take a lot longer on slower servers!")
 
     --create button for file_list.json
     addButton = DGS:dgsCreateButton(declare.marginLeft, declare.marginTop * 3 + declare.height * 6 + declare.spacing * 3, declare.width * 1.25, declare.height, "Add path/s to memo", false, pathsMenu)
@@ -313,9 +314,9 @@ function createMainGuiMenu()
     DGS:dgsTooltipApplyTo(resourceButtonTooltip, resourceButton, "Creates a resource with the selected path and marker. You need to have something present in the memo to create a resource.")--]]
     
     --create checkbox for flushEnabled
-    flushEnabledCheckBox = DGS:dgsCreateCheckBox(declare.marginLeft + declare.width * 1.25 + declare.spacing, declare.marginTop * 3 + declare.height * 6 + declare.spacing * 3.5, declare.width - declare.spacing - declare.marginRight * 2, declare.height, "Override existing file", false, false, pathsMenu)
+    flushEnabledCheckBox = DGS:dgsCreateCheckBox(declare.marginLeft + declare.width * 1.25 + declare.spacing, declare.marginTop * 3 + declare.height * 6 + declare.spacing * 3.5, declare.width - declare.spacing - declare.marginRight * 2, declare.height, "Override existing files", false, false, pathsMenu)
     local flushEnabledCheckBoxTooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
-    DGS:dgsTooltipApplyTo(flushEnabledCheckBoxTooltip, flushEnabledCheckBox, "Choose if you want to override the existing file or not. Default is off.")
+    DGS:dgsTooltipApplyTo(flushEnabledCheckBoxTooltip, flushEnabledCheckBox, "Choose if you want to override the existing files or not. Default is off.\nNote: deletes all files in the paths folder in the current resource/map if checked!")
     
     --create checkbox for memo set read only
     readOnlyCheckBox = DGS:dgsCreateCheckBox(declare.marginLeft + declare.width * 1.25 + declare.spacing, declare.marginTop * 3 + declare.height * 7 + declare.spacing * 4.5, declare.width - declare.spacing - declare.marginRight * 2, declare.height, "Set memo read only", false, false, pathsMenu)
@@ -430,7 +431,7 @@ function createMainGuiMenu()
                 if not currentText:find(markerString, 1, true) then
                     markerValue = m.id
                 else
-                    markerString = "" -- Setze markerString auf leer, wenn er bereits vorhanden ist
+                    markerString = ""
                     markerValue = m.id
                 end
                 break
@@ -737,6 +738,9 @@ function saveMessage(message)
         local cleanedFilePath = string.gsub(filePath, "^paths/", "")
         cleanedFilePath = string.gsub(cleanedFilePath, "%.json$", "")
         outputChatBox("#D7DF01INFO#FFFFFF: You saved the path/s successfully to your map: " .. mapName, 255, 255, 255, true)
+    elseif message == 2 then
+        outputChatBox("#D7DF01INFO#FFFFFF: The existing files have been deleted succesfully!", 255, 255, 255, true)
+        outputChatBox("#D7DF01INFO#FFFFFF: You saved the new path/s successfully to your map: " .. mapName, 255, 255, 255, true)
     else
         outputChatBox("#FF0000ERROR#FFFFFF: Unable to get meta. Make sure meta exists in given map or resource folder.", 255, 255, 255, true)
     end

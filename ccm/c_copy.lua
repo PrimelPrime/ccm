@@ -228,7 +228,7 @@ function cMemoFPlayer()
 
     if infoEnabled then
         outputChatBox("")
-        outputChatBox("Press #FF0000: " .. copyKey .. "#FFFFFFto copy an element to the Memo Clipboard.\nPress #FF0000V #FFFFFFto open the Clipboard.", 255, 255, 255, true)
+        outputChatBox("Press:#FF0000 " .. copyKey .. "#FFFFFF to copy an element to the Memo Clipboard.\nPress #FF0000V #FFFFFFto open the Clipboard.", 255, 255, 255, true)
         outputChatBox("Press #FF0000N #FFFFFFto start/stop recording paths.", 255, 255, 255, true)
     end
 
@@ -352,7 +352,7 @@ function cMemoFPlayer()
     end
     
     -- Create the combo box for selecting the copy key
-    local keyOptions = {"mouse4", "mouse5", "b", "g", "n", "m", "r", "x", ".", ",", "-"}
+    local keyOptions = {"mouse3", "mouse4", "mouse5", "b", "g", "m", "r", "x", ".", ",", "-"}
     local comboBox = DGS:dgsCreateComboBox(15, 15, 200, 30, "Select Copy Key", false, settingsWindow)
     local comboBoxTooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
     DGS:dgsTooltipApplyTo(comboBoxTooltip, comboBox, "Select the key to copy elements to the memo clipboard. \"b\" by default.")

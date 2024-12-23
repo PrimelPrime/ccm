@@ -50,6 +50,7 @@ local scriptName = "ccm.lua"
 
 local isFlushEnabled = false
 
+
 addEvent("onFlushEnabledChange", true)
 addEventHandler("onFlushEnabledChange", root, function(state)
     isFlushEnabled = state
@@ -63,6 +64,7 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
         return
     end
 
+    local filesToDelete = {}
     local paths = {}
     for line in memoText:gmatch("[^\r\n]+") do
         local filePath = line:match('createOccupiedVehicleAndMoveOverPath%([^,]+, [^,]+, [^,]+, "([^"]+)"')
@@ -87,56 +89,83 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
 
         if not fileExists(utilFilePath) then
             fileCopy(utilFile, utilFilePath)
+        else
+            fileDelete(utilFilePath)
+            fileCopy(utilFile, utilFilePath)
         end
 
         local xml = xmlLoadFile(":" .. mapName .. "/meta.xml")
 
         if xml then
             local metaNodes = xmlNodeGetChildren(xml)
-            local fileExistsInMeta = false
-            local utilExistsInMeta = false
-            local scriptExistsInMeta = false
-
-            for i, node in ipairs(metaNodes) do
-                if xmlNodeGetName(node) == "file" and xmlNodeGetAttribute(node, "src") == filePath then
-                    fileExistsInMeta = true
+            if metaNodes then
+                if isFlushEnabled then
+                    for i, node in ipairs(metaNodes) do
+                        if node and xmlNodeGetName(node) == "file" and xmlNodeGetAttribute(node, "src"):find("^paths/") then
+                            table.insert(filesToDelete, xmlNodeGetAttribute(node, "src"))
+                            xmlDestroyNode(node)
+                        end
+                    end
+                    xmlSaveFile(xml)
+                    if not eventTriggered then
+                        triggerClientEvent(source, "onClientSaveMessage", source, 2)
+                        eventTriggered = true
+                    end
                 end
-                if xmlNodeGetName(node) == "script" and xmlNodeGetAttribute(node, "src") == utilName then
-                    utilExistsInMeta = true
+                    
+                local fileExistsInMeta = false
+                local utilExistsInMeta = false
+                local scriptExistsInMeta = false
+                
+                for i, node in ipairs(metaNodes) do
+                    if node and xmlNodeGetName(node) == "file" and xmlNodeGetAttribute(node, "src") == filePath then
+                        fileExistsInMeta = true
+                    end
+                    if node and xmlNodeGetName(node) == "script" and xmlNodeGetAttribute(node, "src") == utilName then
+                        utilExistsInMeta = true
+                    end
+                    if node and xmlNodeGetName(node) == "script" and xmlNodeGetAttribute(node, "src") == scriptName then
+                        scriptExistsInMeta = true
+                    end
                 end
-                if xmlNodeGetName(node) == "script" and xmlNodeGetAttribute(node, "src") == scriptName then
-                    scriptExistsInMeta = true
+        
+                if not fileExistsInMeta then
+                    local newNode = xmlCreateChild(xml, "file")
+                    xmlNodeSetAttribute(newNode, "src", filePath)
+                end
+        
+                if not utilExistsInMeta then
+                    local newUtilNode = xmlCreateChild(xml, "script")
+                    xmlNodeSetAttribute(newUtilNode, "src", utilName)
+                    xmlNodeSetAttribute(newUtilNode, "type", "client")
+                end
+        
+                if not scriptExistsInMeta then
+                    local newScriptNode = xmlCreateChild(xml, "script")
+                    xmlNodeSetAttribute(newScriptNode, "src", scriptName)
+                    xmlNodeSetAttribute(newScriptNode, "type", "client")
+                end
+                
+                xmlSaveFile(xml)
+                xmlUnloadFile(xml)
+                    
+                if not eventTriggered then
+                    triggerClientEvent(source, "onClientSaveMessage", source, 1)
+                    eventTriggered = true
+                end
+            else
+                outputDebugString("Failed to load meta.xml for map: " .. mapName)
+                if not eventTriggered then
+                    triggerClientEvent(source, "onClientSaveMessage", source, 0)
+                    eventTriggered = true
                 end
             end
-
-            if not fileExistsInMeta then
-                local newNode = xmlCreateChild(xml, "file")
-                xmlNodeSetAttribute(newNode, "src", filePath)
-            end
-
-            if not utilExistsInMeta then
-                local newUtilNode = xmlCreateChild(xml, "script")
-                xmlNodeSetAttribute(newUtilNode, "src", utilName)
-                xmlNodeSetAttribute(newUtilNode, "type", "client")
-            end
-
-            if not scriptExistsInMeta then
-                local newScriptNode = xmlCreateChild(xml, "script")
-                xmlNodeSetAttribute(newScriptNode, "src", scriptName)
-                xmlNodeSetAttribute(newScriptNode, "type", "client")
-            end
-            
-            xmlSaveFile(xml)
-            xmlUnloadFile(xml)
-            
-            if not eventTriggered then
-                triggerClientEvent(source, "onClientSaveMessage", source, 1)
-                eventTriggered = true
-            end
-        else
-            if not eventTriggered then
-                triggerClientEvent(source, "onClientSaveMessage", source, 0)
-                eventTriggered = true
+            for _, file in ipairs(filesToDelete) do
+                local file = ":" .. mapName .. "/" .. file
+                if fileExists(file) then
+                    fileDelete(file)
+                    outputDebugString("Deleted file: " .. file)
+                end
             end
         end
     end
