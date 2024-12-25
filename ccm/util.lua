@@ -106,6 +106,7 @@ function createOccupiedVehicleAndMoveOverPath(marker, pedID, vehicleID, filePath
     startValue = startValue or 0
     endValue = endValue or 2500
     duration = duration or 3000
+    reversePath = reversePath or false
     --Read path from file
     local path = readPathFromFile(filePath, reversePath)
     if not path then
