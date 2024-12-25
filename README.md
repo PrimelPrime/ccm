@@ -20,7 +20,7 @@
                   --------\::/----/----------------\::/----/----------------\::/----/--------
                   ---------\/____/------------------\/____/------------------\/____/---------
                   ---------------------------------------------------------------------------
-# CCM - Copy and Car Movement Tool Version 1.0.0 for MTA:SA
+# CCM - Copy and Car Movement Tool Version 1.0.2 for MTA:SA
 
 An easy tool to add NPC-like moving vehicles to your maps without having to write them yourself!
 
@@ -44,9 +44,13 @@ An easy tool to add NPC-like moving vehicles to your maps without having to writ
 
 > Enjoy!
 
+## Version 1.0.2
+Added the option to reverse recorded paths.
+
 ## Version 1.0.1
-Reworked the override functionality to now delete all existing files in the paths folder
-fixed some minor typos
+Reworked the override functionality to now delete all existing files in the paths folder.
+
+Fixed some minor typos.
 
 ## Version 1.0.0
 Initial release

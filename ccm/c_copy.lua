@@ -587,7 +587,6 @@ function toggleTimer()
 
         if not timer then
             local argumentValues = {}
-            --createOccupiedVehicleAndMoveOverPath(marker, pedID, vehicleID, filePath, heightOffset, searchlightFollowsPlayer, searchlightOffset, adjustableProperty, adjPropValue, interpolateAdjProp, startValue, endValue, duration)
             argumentValues.pedID = DGS:dgsGetText(editFields[1])
             argumentValues.vehicleID = DGS:dgsGetText(editFields[2])
             argumentValues.heightOffset = DGS:dgsGetText(editFields[4])
@@ -601,6 +600,7 @@ function toggleTimer()
             argumentValues.startValue = DGS:dgsGetText(editFields[9])
             argumentValues.endValue = DGS:dgsGetText(editFields[10])
             argumentValues.duration = DGS:dgsGetText(editFields[11])
+            argumentValues.reversePath = DGS:dgsSwitchButtonGetState(switchButtons[6])
             
             local filePath = DGS:dgsGetText(editFields[3])
             if filePath == "" or filePath == "Choose a file name" then

@@ -47,7 +47,7 @@ function applyOffset(baseElement, offsetX, offsetY, offsetZ)
     return bx + offsetX, by + offsetY, bz + offsetZ
 end
 
-function readPathFromFile(filePath)
+function readPathFromFile(filePath, reverse)
     local file = fileOpen(filePath)
     if not file then
         outputDebugString("Failed to open file: " .. filePath)
@@ -71,6 +71,15 @@ function readPathFromFile(filePath)
         end
     end
 
+    -- Reverse the path if the reverse option is true
+    if reverse then
+        local reversedPath = {}
+        for i = #flattenedPath, 1, -1 do
+            table.insert(reversedPath, flattenedPath[i])
+        end
+        flattenedPath = reversedPath
+    end
+
     return flattenedPath
 end
 
@@ -84,7 +93,7 @@ local emergencyVehicles = {
 
 local searchlights = {}
 
-function createOccupiedVehicleAndMoveOverPath(marker, pedID, vehicleID, filePath, heightOffset, destroyVehicle, sirenLights, searchlightFollowsPlayer, searchlightOffset, adjustableProperty, adjPropValue, interpolateAdjProp, startValue, endValue, duration)
+function createOccupiedVehicleAndMoveOverPath(marker, pedID, vehicleID, filePath, heightOffset, destroyVehicle, sirenLights, searchlightFollowsPlayer, searchlightOffset, adjustableProperty, adjPropValue, interpolateAdjProp, startValue, endValue, duration, reversePath)
     --Set default values for optional arguments if not provided
     heightOffset = heightOffset or 0 --might be needed for certain vehicles
     destroyVehicle = destroyVehicle or false
@@ -98,7 +107,7 @@ function createOccupiedVehicleAndMoveOverPath(marker, pedID, vehicleID, filePath
     endValue = endValue or 2500
     duration = duration or 3000
     --Read path from file
-    local path = readPathFromFile(filePath)
+    local path = readPathFromFile(filePath, reversePath)
     if not path then
         outputDebugString("Failed to read path from file: " .. filePath)
         return

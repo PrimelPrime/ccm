@@ -18,7 +18,8 @@ arguments = {
     {name = "interpolateAdjProp", toolTip = "Decide if you want to interpolate between two values for the adjustable property.", type = "boolean", text = "Adjustable property interpolation"},
     {name = "startValue", toolTip = "Start value: see tooltip for adjustable property. 0 by default.", type = "float", text = "Start value"},
     {name = "endValue", toolTip = "End value: see tooltip for adjustable property. 2500 by default.", type = "float", text = "End value"},
-    {name = "duration", toolTip = "Duration for the adjustable property set in milliseconds. 3000 by default.", type = "float", text = "Duration"}
+    {name = "duration", toolTip = "Duration for the adjustable property set in milliseconds. 3000 by default.", type = "float", text = "Duration"},
+    {name = "reversePath", toolTip = "Reverse the path. False by default.", type = "boolean", text = "Reverse path"},
 
 }
 
@@ -456,14 +457,15 @@ function createMainGuiMenu()
                 local startValue = tonumber(arguments.startValue) or "0"
                 local endValue = tonumber(arguments.endValue) or "2500"
                 local duration = tonumber(arguments.duration) or "3000"
+                local reversePath = (arguments.reversePath == true or arguments.reversePath == false) and arguments.reversePath or false
 
                 if type(searchlightOffset) ~= "table" then
                     searchlightOffset = {"0", "0", "0"}
                 end
 
                 local formattedString = string.format(
-                    "createOccupiedVehicleAndMoveOverPath(%s, %s, %s, \"%s\", %s, %s, %s, %s, {%s, %s, %s}, %s, %s, %s, %s, %s, %s)",
-                    markerValue,
+                    "createOccupiedVehicleAndMoveOverPath(%s, %s, %s, \"%s\", %s, %s, %s, %s, {%s, %s, %s}, %s, %s, %s, %s, %s, %s, %s)",
+                    markerValue:gsub("[%s%(%)]", ""),
                     arguments.pedID or "0",
                     arguments.vehicleID or "411",
                     path,
@@ -479,7 +481,8 @@ function createMainGuiMenu()
                     tostring(interpolateAdjProp),
                     startValue,
                     endValue,
-                    duration
+                    duration,
+                    tostring(reversePath)
                 )
 
                 local currentText = DGS:dgsGetText(mainMemo)
