@@ -20,7 +20,7 @@
                   --------\::/----/----------------\::/----/----------------\::/----/--------
                   ---------\/____/------------------\/____/------------------\/____/---------
                   ---------------------------------------------------------------------------
-# CCM - Copy and Car Movement Tool Version 1.0.2 for MTA:SA
+# CCM - Copy and Car Movement Tool Version 1.1.0 for MTA:SA
 
 An easy tool to add NPC-like moving vehicles to your maps without having to write them yourself!
 
@@ -44,6 +44,16 @@ An easy tool to add NPC-like moving vehicles to your maps without having to writ
 
 > Enjoy!
 
+## Version 1.1.0
+The vehicle the player sits in is now recorded properly.
+(Height Offset should not be needed anymore)
+
+Vehicles are now created immediatley instead of being created and moved over their path when the player hits the designated marker.
+
+getPedControlAnalogeState is now being tracked while recording the path to properly display left and right vehicle steering.
+
+Adjusted/fixed some minor stuff.
+
 ## Version 1.0.2
 Added the option to reverse recorded paths.
 
@@ -53,4 +63,4 @@ Reworked the override functionality to now delete all existing files in the path
 Fixed some minor typos.
 
 ## Version 1.0.0
-Initial release
+Initial release.
