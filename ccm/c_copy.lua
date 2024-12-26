@@ -19,7 +19,7 @@ function saveSettings()
         fileClose(file)
         --outputDebugString("Settings saved.")
     else
-        outputDebugString("Failed to save settings.")
+        outputDebugString("[CCM]: Failed to save settings.", 0, 255, 100, 100)
     end
 end
 
@@ -55,10 +55,10 @@ function loadSettings()
                 -- Save the updated settings back to the file
                 saveSettings()
             else
-                outputDebugString("Failed to parse settings.")
+                outputDebugString("[CCM]: Failed to parse settings.", 0, 255, 100, 100)
             end
         else
-            outputDebugString("Failed to open settings file.")
+            outputDebugString("[CCM]: Failed to open settings file.", 0, 255, 100, 100)
         end
     else
         useTableFormat = defaultSettings.useTableFormat
@@ -66,7 +66,7 @@ function loadSettings()
         infoEnabled = defaultSettings.infoEnabled
         enableWindowShWindow = defaultSettings.enableWindowShWindow
         copyKey = defaultSettings.copyKey
-        outputDebugString("Settings file does not exist.")
+        outputDebugString("[CCM]: Settings file does not exist.", 0, 255, 100, 100)
         -- Save the default settings to a new file
         saveSettings()
     end
@@ -82,7 +82,7 @@ function saveMemoToFile(memo, filename)
         fileWrite(file, toJSON({content = content}))
         fileClose(file)
     else
-        outputDebugString("Failed to save " .. filename)
+        outputDebugString("[CCM]: Failed to save " .. filename, 0, 255, 100, 100)
     end
 end
 
@@ -97,15 +97,15 @@ function loadMemoFromFile(memo, filename)
             fileClose(file)
             if data and data.content then
                 DGS:dgsSetText(memo, data.content)
-                outputDebugString(filename .. " loaded.")
+                outputDebugString("[CCM]: " .. filename .. " loaded.", 4, 100, 255, 100)
             else
-                outputDebugString("Failed to parse " .. filename)
+                outputDebugString("[CCM]: Failed to parse " .. filename, 0, 255, 100, 100)
             end
         else
-            outputDebugString("Failed to open " .. filename)
+            outputDebugString("[CCM]: Failed to open " .. filename, 0, 255, 100, 100)
         end
     else
-        outputDebugString(filename .. " does not exist.")
+        outputDebugString("[CCM]: " .. filename .. " does not exist.", 0, 255, 100, 100)
     end
 end
 
@@ -321,9 +321,6 @@ function cMemoFPlayer()
     checkboxShWindow = DGS:dgsCreateCheckBox(15, 135, 200, 30, "Enable window on start or join", enableWindowShWindow, false, settingsWindow)
     local checkboxShWindowTooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
     DGS:dgsTooltipApplyTo(checkboxShWindowTooltip, checkboxShWindow, "Enable or disable the window to be shown on start or join.")
-    if not checkboxShWindow then
-        outputDebugString("Failed to create checkboxShWindow", 1)
-    end
     addEventHandler("onDgsMouseClickUp", checkboxShWindow, function()
         enableWindowShWindow = DGS:dgsCheckBoxGetSelected(checkboxShWindow)
         saveSettings()
@@ -511,9 +508,10 @@ local isFirstEntry = true
 local currentFilePath = nil
 
 function recordMovement()
+    local vehicle = getPedOccupiedVehicle(localPlayer)
     if not startPosition then
-        startPosition = {getElementPosition(localPlayer)}
-        startRotation = {getElementRotation(localPlayer)}
+        startPosition = {getElementPosition(vehicle)}
+        startRotation = {getElementRotation(vehicle)}
         local vehicle = getPedOccupiedVehicle(localPlayer)
         if vehicle then
             local vehicleID = getElementModel(vehicle)
@@ -531,8 +529,10 @@ function recordMovement()
         triggerServerEvent("onStartRecording", localPlayer, initialData)
         isFirstEntry = false
     else
-        local currentPosition = {getElementPosition(localPlayer)}
-        local currentRotation = {getElementRotation(localPlayer)}
+        local currentPosition = {getElementPosition(vehicle)}
+        local currentRotation = {getElementRotation(vehicle)}
+        local controlStateLeft = getPedAnalogControlState(localPlayer, "vehicle_left", true)
+        local controlStateRight = getPedAnalogControlState(localPlayer, "vehicle_right", true) 
         local rotationDifference
         if lastRotation then
             rotationDifference = {
@@ -551,9 +551,10 @@ function recordMovement()
         local currentTime = getTickCount()
         if currentTime - lastOutputTime >= outputInterval then
             local positionData = string.format(
-                '[{"x": %.3f, "y": %.3f, "z": %.3f, "rx": %.3f, "ry": %.3f, "rz": %.3f}]',
+                '[{"x": %.3f, "y": %.3f, "z": %.3f, "rx": %.3f, "ry": %.3f, "rz": %.3f, "cl": %.2f, "cr": %.2f}]',
                 currentPosition[1], currentPosition[2], currentPosition[3],
-                -currentRotation[1], -currentRotation[2], currentRotation[3]
+                -currentRotation[1], -currentRotation[2], currentRotation[3], 
+                controlStateLeft, controlStateRight
             )
             
             triggerServerEvent("onRecordData", localPlayer, positionData)
@@ -609,7 +610,7 @@ function toggleTimer()
 
             filePath = sanitizeFilename(filePath)
             
-            outputDebugString("Sending file creation request: " .. filePath)
+            outputDebugString("[CCM]: Sending file creation request: " .. filePath, 4, 100, 255, 100)
             triggerServerEvent("onRequestFileCreation", localPlayer, filePath, argumentValues)
             timer = setTimer(recordMovement, outputInterval, 0)
         elseif not vehicle then

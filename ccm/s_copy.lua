@@ -54,7 +54,6 @@ local isFlushEnabled = false
 addEvent("onFlushEnabledChange", true)
 addEventHandler("onFlushEnabledChange", root, function(state)
     isFlushEnabled = state
-    outputDebugString("Flush enabled state changed to: " .. tostring(isFlushEnabled))
 end)
 
 addEvent("onImportPaths", true)
@@ -77,15 +76,7 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
         local utilFile = ":" .. getResourceName(getThisResource()) .. "/util.lua"
         local utilFilePath = ":" .. mapName .. "/util.lua"
         local fileListPath = ":" .. getResourceName(getThisResource()) .."/".. filePath
-        outputDebugString("fileListPath: "..fileListPath)
         local fullPath = ":" .. mapName .. "/" .. filePath
-
-        if not fileExists(fullPath) then
-            fileCopy(fileListPath, fullPath)
-        else
-            fileDelete(fullPath)
-            fileCopy(fileListPath, fullPath)
-        end
 
         if not fileExists(utilFilePath) then
             fileCopy(utilFile, utilFilePath)
@@ -105,6 +96,13 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
                             table.insert(filesToDelete, xmlNodeGetAttribute(node, "src"))
                             xmlDestroyNode(node)
                         end
+                        for _, file in ipairs(filesToDelete) do
+                            local file = ":" .. mapName .. "/" .. file
+                            if fileExists(file) then
+                                fileDelete(file)
+                                outputDebugString("[CCM]: Deleted file: " .. file, 4, 100, 255, 100)
+                            end
+                        end
                     end
                     xmlSaveFile(xml)
                     if not eventTriggered then
@@ -117,15 +115,21 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
                 local utilExistsInMeta = false
                 local scriptExistsInMeta = false
                 
-                for i, node in ipairs(metaNodes) do
-                    if node and xmlNodeGetName(node) == "file" and xmlNodeGetAttribute(node, "src") == filePath then
-                        fileExistsInMeta = true
-                    end
-                    if node and xmlNodeGetName(node) == "script" and xmlNodeGetAttribute(node, "src") == utilName then
-                        utilExistsInMeta = true
-                    end
-                    if node and xmlNodeGetName(node) == "script" and xmlNodeGetAttribute(node, "src") == scriptName then
-                        scriptExistsInMeta = true
+                for _, node in ipairs(metaNodes) do
+                    if node and xmlNodeGetName(node) then
+                        local nodeName = xmlNodeGetName(node)
+                        if nodeName == "file" then
+                            if xmlNodeGetAttribute(node, "src") == filePath then
+                                fileExistsInMeta = true
+                            end
+                        elseif nodeName == "script" then
+                            local src = xmlNodeGetAttribute(node, "src")
+                            if src == utilName then
+                                utilExistsInMeta = true
+                            elseif src == scriptName then
+                                scriptExistsInMeta = true
+                            end
+                        end
                     end
                 end
         
@@ -154,21 +158,21 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
                     eventTriggered = true
                 end
             else
-                outputDebugString("Failed to load meta.xml for map: " .. mapName)
+                outputDebugString("[CCM]: Failed to load meta.xml for map: " .. mapName, 0, 255, 100, 100)
                 if not eventTriggered then
                     triggerClientEvent(source, "onClientSaveMessage", source, 0)
                     eventTriggered = true
                 end
             end
-            for _, file in ipairs(filesToDelete) do
-                local file = ":" .. mapName .. "/" .. file
-                if fileExists(file) then
-                    fileDelete(file)
-                    outputDebugString("Deleted file: " .. file)
-                end
+            if not fileExists(fullPath) then
+                fileCopy(fileListPath, fullPath)
+            else
+                fileDelete(fullPath)
+                fileCopy(fileListPath, fullPath)
             end
         end
     end
+
 
     local scriptPath = ":" .. mapName .. "/" .. scriptName
     local scriptContent = ""
@@ -184,13 +188,13 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
     local scriptFile = fileCreate(scriptPath)
     if scriptFile then
         if isFlushEnabled then
-            fileWrite(scriptFile, stringFunction) -- Überschreibe die Datei
+            fileWrite(scriptFile, stringFunction)
         else
-            fileWrite(scriptFile, scriptContent .. "\n" .. stringFunction) -- Füge den neuen Inhalt hinzu
+            fileWrite(scriptFile, scriptContent .. "\n" .. stringFunction)
         end
         fileClose(scriptFile)
     else
-        outputDebugString("Failed to create script file: " .. scriptPath, 1)
+        outputDebugString("[CCM]: Failed to create script file: " .. scriptPath, 0, 255, 100, 100)
     end
     eventTriggered = false
 end)
@@ -212,7 +216,7 @@ end)
 addEvent("onRequestFileCreation", true)
 addEventHandler("onRequestFileCreation", root, function(filePath, argumentValues)
     local client = source
-    outputDebugString("Received file creation request from client: " .. tostring(filePath))
+    outputDebugString("[CCM]: Received file creation request from client: " .. tostring(filePath), 4, 100, 255, 100)
 
     local fullPath = "paths/" .. filePath .. ".json"
     local fileCounts = 1
@@ -222,11 +226,11 @@ addEventHandler("onRequestFileCreation", root, function(filePath, argumentValues
         fullPath = "paths/" .. filePath .. tostring(fileCounts) .. ".json"
     end
     
-    outputDebugString("Using path: " .. fullPath)
+    outputDebugString("[CCM]: Using path: " .. fullPath, 4, 100, 255, 100)
 
     local success = addFileListEntry(fullPath, argumentValues)
     if not success then
-        outputDebugString("Failed to add entry to file_list.json", 1)
+        outputDebugString("[CCM]: Failed to add entry to file_list.json", 0, 255, 100, 100)
         return
     end
 
@@ -239,9 +243,9 @@ addEventHandler("onRequestFileCreation", root, function(filePath, argumentValues
             arguments = argumentValues
         }
         triggerClientEvent(client, "onFileCreationSuccess", client, fullPath)
-        outputDebugString("File creation successful: " .. fullPath)
+        outputDebugString("[CCM]: File creation successful: " .. fullPath, 4, 100, 255, 100)
     else
-        outputDebugString("Failed to create output file: " .. fullPath, 1)
+        outputDebugString("[CCM]: Failed to create output file: " .. fullPath, 0, 255, 100, 100)
     end
 end)
 
@@ -291,14 +295,14 @@ addEventHandler("onRequestFileList", root, function()
     local fileList = {}
 
     if not fileExists(fileListPath) then
-        outputDebugString("File list does not exist, creating: 'file_list.json'")
+        outputDebugString("[CCM]: File list does not exist, creating: 'file_list.json'", 4, 100, 255, 100)
         local newFile = fileCreate(fileListPath)
         if newFile then
 
             fileWrite(newFile, "[]")
             fileClose(newFile)
         else
-            outputDebugString("Failed to create file_list.json", 1)
+            outputDebugString("[CCM]: Failed to create file_list.json", 0, 255, 100, 100)
             triggerClientEvent(client, "onReceiveFileList", client, {})
             return
         end
@@ -306,7 +310,7 @@ addEventHandler("onRequestFileList", root, function()
 
     local file = fileOpen(fileListPath, true)
     if not file then
-        outputDebugString("Failure to open 'file_list.json'", 1)
+        outputDebugString("[CCM]: Failure to open 'file_list.json'", 0, 255, 100, 100)
         triggerClientEvent(client, "onReceiveFileList", client, {})
         return
     end
@@ -319,11 +323,11 @@ addEventHandler("onRequestFileList", root, function()
         if success and type(data) == "table" then
             fileList = data
         else
-            outputDebugString("Failed to parse JSON content", 1)
+            outputDebugString("[CCM]: Failed to parse JSON content", 0, 255, 100, 100)
         end
     end
     
-    outputDebugString("Sending file list to client with " .. #fileList .. " entries")
+    outputDebugString("[CCM]: Sending file list to client with " .. #fileList .. " entries", 4, 100, 255, 100)
     triggerClientEvent(client, "onReceiveFileList", client, fileList)
 end)
 

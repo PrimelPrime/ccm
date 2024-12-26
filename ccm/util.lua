@@ -107,7 +107,6 @@ function createOccupiedVehicleAndMoveOverPath(marker, pedID, vehicleID, filePath
     endValue = endValue or 2500
     duration = duration or 3000
     reversePath = reversePath or false
-    --Read path from file
     local path = readPathFromFile(filePath, reversePath)
     if not path then
         outputDebugString("Failed to read path from file: " .. filePath)
@@ -119,14 +118,15 @@ function createOccupiedVehicleAndMoveOverPath(marker, pedID, vehicleID, filePath
         return
     end
 
+    local instance = {}
+    instance.isMoving = false
+
     local offsetX, offsetY, offsetZ
     if type(searchlightOffset) == "table" then
-        --Table: offset = {offsetX, offsetY, offsetZ}
         offsetX = searchlightOffset[1] or 0
         offsetY = searchlightOffset[2] or 0
         offsetZ = searchlightOffset[3] or 0
     elseif type(searchlightOffset) == "number" then
-        --Single Value: offset only returns offsetZ (Standard for X und Y: 0)
         offsetX, offsetY, offsetZ = 0, 0, searchlightOffset
     else
         error("Invalid offset format. Must be table {x, y, z} or single number.")
@@ -134,118 +134,139 @@ function createOccupiedVehicleAndMoveOverPath(marker, pedID, vehicleID, filePath
 
     --Function to start movement of vehicle along path every time the marker is hit
     --anything else is also handled inside here
-    function startOccupiedVehicleMovement(hitElement)
-        if hitElement == localPlayer then
-            local playerVehicle = getPedOccupiedVehicle(localPlayer)
-            if playerVehicle then
 
-                local instance = {}
-                
+        
+    local function destroyInstance()
+        if isElement(instance.ped) then destroyElement(instance.ped) end
+        if isElement(instance.vehicle) then destroyElement(instance.vehicle) end
+        if isElement(instance.searchlight) then destroyElement(instance.searchlight) end
+        for i = #searchlights, 1, -1 do
+            if searchlights[i] == instance then
+                table.remove(searchlights, i)
+                break
+            end
+        end
+        instance.isMoving = false
+    end
+    
+    local function createElementInstance()
+        instance.ped = createPed(pedID, path[1].x, path[1].y, path[1].z)
 
-                local function destroyInstance()
-                    if isElement(instance.ped) then destroyElement(instance.ped) end
-                    if isElement(instance.vehicle) then destroyElement(instance.vehicle) end
-                    if isElement(instance.searchlight) then destroyElement(instance.searchlight) end
-                    for i = #searchlights, 1, -1 do
-                        if searchlights[i] == instance then
-                            table.remove(searchlights, i)
-                            outputDebugString("Removed searchlight")
-                            break
+        instance.vehicle = createVehicle(vehicleID, path[1].x, path[1].y, path[1].z, path[1].rx, path[1].ry, path[1].rz + heightOffset)
+        setVehicleEngineState(instance.vehicle, true)
+        setVehicleOverrideLights(instance.vehicle, 2)
+        warpPedIntoVehicle(instance.ped, instance.vehicle)
+
+        setTimer(function()
+            setElementFrozen(instance.vehicle, true)
+            setElementFrozen(instance.ped, true)
+        end, 50, 1)
+
+        --Create searchlight for vehicle
+        if searchlightFollowsPlayer then
+            local sx, sy, sz = applyOffset(instance.vehicle, offsetX, offsetY, offsetZ)
+
+            instance.searchlight = createSearchLight(sx, sy, sz, 0, 0, 0, 0, 15, true)
+            instance.followsPlayer = searchlightFollowsPlayer
+            instance.offset = {calculateOffset(instance.vehicle, instance.searchlight)}
+            table.insert(searchlights, instance)
+        end
+        
+        for i, emergencyVehicle in ipairs(emergencyVehicles) do
+            if vehicleID == emergencyVehicle and sirenLights then
+                setVehicleSirensOn(instance.vehicle, true)
+                break
+            end
+        end
+
+        for i, aircraft in ipairs(aircraftIDs) do
+            if vehicleID == aircraft then
+                setVehicleLandingGearDown(instance.vehicle, false)
+                break
+            end
+        end
+
+        if (vehicleID == 438 or vehicleID == 420) then
+            setVehicleTaxiLightOn(instance.vehicle, true)
+        end
+
+        if (vehicleID == 520 or vehicleID == 406 or vehicleID == 443 or vehicleID == 530) and adjustableProperty then
+            setVehicleAdjustableProperty(instance.vehicle, adjPValue)
+            if interpolateAdjProp then
+                local function interpolateProperty(vehicle, startValue, endValue, duration)
+                    local startTime = getTickCount()
+                    local function updateProperty()
+                        local currentTime = getTickCount()
+                        local elapsedTime = currentTime - startTime
+                        local progress = elapsedTime / duration
+                        if progress > 1 then progress = 1 end
+                        local currentValue = startValue + (endValue - startValue) * progress
+                        setVehicleAdjustableProperty(vehicle, currentValue)
+                        if progress < 1 then
+                            setTimer(updateProperty, 50, 1)
                         end
                     end
+                    updateProperty()
                 end
-
-                instance.ped = createPed(pedID, path[1].x, path[1].y, path[1].z)
-                setPedControlState(instance.ped, "accelerate", true)
-
-                instance.vehicle = createVehicle(vehicleID, path[1].x, path[1].y, path[1].z, path[1].rx, path[1].ry, path[1].rz + heightOffset)
-                setVehicleEngineState(instance.vehicle, true)
-                setVehicleOverrideLights(instance.vehicle, 2)
-                warpPedIntoVehicle(instance.ped, instance.vehicle)
-
-                --Create searchlight for vehicle
-                if searchlightFollowsPlayer then
-                    local sx, sy, sz = applyOffset(instance.vehicle, offsetX, offsetY, offsetZ)
-
-                    instance.searchlight = createSearchLight(sx, sy, sz, 0, 0, 0, 0, 15, true)
-                    instance.followsPlayer = searchlightFollowsPlayer
-                    instance.offset = {calculateOffset(instance.vehicle, instance.searchlight)}
-                    table.insert(searchlights, instance)
-                end
-                
-                --Set siren lights on for emergency vehicles
-                for i, emergencyVehicle in ipairs(emergencyVehicles) do
-                    if vehicleID == emergencyVehicle and sirenLights then
-                        setVehicleSirensOn(instance.vehicle, true)
-                        break
-                    end
-                end
-
-
-                --Set landing gear up for aircraft
-                for i, aircraft in ipairs(aircraftIDs) do
-                    if vehicleID == aircraft then
-                        setVehicleLandingGearDown(instance.vehicle, false)
-                        break
-                    end
-                end
-
-                --Set taxi light on for taxi vehicles
-                if (vehicleID == 438 or vehicleID == 420) then
-                    setVehicleTaxiLightOn(instance.vehicle, true)
-                end
-
-                --Set adjustable property for certain vehicles
-                if (vehicleID == 520 or vehicleID == 406 or vehicleID == 443 or vehicleID == 530) and adjustableProperty then
-                    setVehicleAdjustableProperty(instance.vehicle, adjPValue)
-                    if interpolateAdjProp then
-                        local function interpolateProperty(vehicle, startValue, endValue, duration)
-                            local startTime = getTickCount()
-                            local function updateProperty()
-                                local currentTime = getTickCount()
-                                local elapsedTime = currentTime - startTime
-                                local progress = elapsedTime / duration
-                                if progress > 1 then progress = 1 end
-                                local currentValue = startValue + (endValue - startValue) * progress
-                                setVehicleAdjustableProperty(vehicle, currentValue)
-                                if progress < 1 then
-                                    setTimer(updateProperty, 50, 1)
-                                end
-                            end
-                            updateProperty()
-                        end
-                        interpolateProperty(instance.vehicle, startValue, endValue, duration)
-                    end
-                end
-
-                --the move function
-                local function moveVehicleAlongPath(index)
-                    if index > #path then
-                        if destroyVehicle then
-                            destroyInstance()
-                        else
-                            setPedControlState(instance.ped, "accelerate", false)
-                            setPedControlState(instance.ped, "handbrake", true)
-                        end
-                        return
-                    end
-                
-                    if path[index] then
-                        setElementPosition(instance.vehicle, path[index].x, path[index].y, path[index].z + heightOffset)
-                        setElementRotation(instance.vehicle, path[index].rx, path[index].ry, path[index].rz)
-                        setTimer(function()
-                            moveVehicleAlongPath(index + 1)
-                        end, 5, 1)
-                    else
-                        outputDebugString("Path index out of bounds: " .. tostring(index))
-                    end
-                end
-
-                moveVehicleAlongPath(2)
+                interpolateProperty(instance.vehicle, startValue, endValue, duration)
             end
         end
     end
 
+    createElementInstance()
+
+    local function moveVehicleAlongPath(index)
+        if index > #path then
+            if destroyVehicle then
+                destroyInstance()
+                setTimer(createElementInstance, 100, 1)
+            else
+                setPedControlState(instance.ped, "accelerate", false)
+                setPedControlState(instance.ped, "handbrake", true)
+                setPedAnalogControlState(instance.ped, "vehicle_left", 0)
+                setPedAnalogControlState(instance.ped, "vehicle_right", 0)
+                instance.isMoving = false
+            end
+            return
+        end
+
+        if isElementFrozen(instance.vehicle) then
+            setElementFrozen(instance.vehicle, false)
+        end
+        if isElementFrozen(instance.ped) then
+            setElementFrozen(instance.ped, false)
+        end
+    
+        if path[index] then
+            setElementPosition(instance.vehicle, path[index].x, path[index].y, path[index].z + heightOffset)
+            setElementRotation(instance.vehicle, path[index].rx, path[index].ry, path[index].rz)
+            if path[index].cl > 0 then
+                setPedAnalogControlState(instance.ped, "vehicle_left", path[index].cl)
+            else
+                setPedAnalogControlState(instance.ped, "vehicle_right", path[index].cr)
+            end
+
+            setTimer(function()
+                moveVehicleAlongPath(index + 1)
+            end, 5, 1)
+        else
+            instance.isMoving = false
+        end
+    end
+
+    function startOccupiedVehicleMovement(hitElement)
+        if hitElement == localPlayer then
+            local playerVehicle = getPedOccupiedVehicle(localPlayer)
+            if playerVehicle and not instance.isMoving then
+                if not isElement(instance.vehicle) then
+                    createElementInstance()
+                end
+                instance.isMoving = true
+                setPedControlState(instance.ped, "accelerate", true)
+                moveVehicleAlongPath(2)
+            end
+        end
+    end
     addEventHandler("onClientMarkerHit", marker, startOccupiedVehicleMovement)
 end
 

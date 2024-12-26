@@ -42,7 +42,7 @@ addEventHandler("onReceiveFileList", localPlayer, function(fileList)
                 DGS:dgsComboBoxAddItem(pathsComboBox, filePath)
             end
         end
-        outputDebugString("All files have been successfully added to the ComboBox.")
+        outputDebugString("[CCM]: All files have been successfully added to the ComboBox.", 4, 100, 255, 100)
     end
 end)
 
@@ -69,7 +69,6 @@ local markers = {}
 
 addEvent("updateMarkersList", true)
 addEventHandler("updateMarkersList", root, function(serverMarkers)
-    outputDebugString("updateMarkersList triggered on client")
 
     DGS:dgsGridListClear(markerGridList)
     if DGS:dgsGridListGetColumnCount(markerGridList) == 0 then
@@ -77,7 +76,7 @@ addEventHandler("updateMarkersList", root, function(serverMarkers)
     end
 
     if not serverMarkers or #serverMarkers == 0 then
-        outputDebugString("No markers received from server.")
+        outputDebugString("[CCM]: No markers received from server.", 0, 255, 100, 100)
         return
     end
 
@@ -442,7 +441,7 @@ function createMainGuiMenu()
         for i, entry in ipairs(fileList) do
             if entry.path == path then
                 local arguments = entry.arguments
-                outputDebugString("Arguments for path: " .. toJSON(arguments))
+                --outputDebugString("Arguments for path: " .. toJSON(arguments))
 
                 local pedID = tonumber(arguments.pedID) or "0"
                 local vehicleID = tonumber(arguments.vehicleID) or "411"
@@ -693,7 +692,7 @@ function saveMemoScriptToFile()
         fileWrite(file, toJSON(content))
         fileClose(file)
     else
-        outputDebugString("Failed to save scriptmemo.json")
+        outputDebugString("[CCM]: Failed to save scriptmemo.json", 0, 255, 100, 100)
     end
 end
 addEventHandler("onClientResourceStop", resourceRoot, saveMemoScriptToFile)
@@ -706,9 +705,9 @@ function loadMemoScriptFromFile()
             local content = fileRead(file, fileGetSize(file))
             DGS:dgsSetText(mainMemo, fromJSON(content))
             fileClose(file)
-            outputDebugString("scriptmemo.json loaded.")
+            outputDebugString("[CCM]: scriptmemo.json loaded.", 4, 100, 255, 100)
         else
-            outputDebugString("Failed to load scriptmemo.json")
+            outputDebugString("[CCM]: Failed to load scriptmemo.json", 0, 255, 100, 100)
         end
     end
 end
@@ -727,12 +726,8 @@ end
 
 function saveMessage(message)
 
-    local selectedPath = DGS:dgsComboBoxGetSelectedItem(pathsComboBox)
     local selectedMap = DGS:dgsGridListGetSelectedItem(mapsGridList)
-
-    local filePath = DGS:dgsComboBoxGetItemText(pathsComboBox, selectedPath)
     local mapName = DGS:dgsGridListGetItemText(mapsGridList, selectedMap, 1)
-    local stringFunction = DGS:dgsGetText(mainMemo)
 
     if message == 0 then
         outputChatBox("#FF0000ERROR#FFFFFF: I have no permission to edit files. Add admin rights to this resource.", 255, 255, 255, true)
