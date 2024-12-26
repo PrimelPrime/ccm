@@ -151,7 +151,7 @@ function processFiles(data2save)
 	saveDirectoryData(toJSON(data2save))
 	
 	if #filesModified > 0 then
-		fetchRemote("https://api.github.com/repos/primelprime/ccm/commits", function(...)
+		fetchRemote("https://api.github.com/repos/primelprime/ccm/contents/ccm", function(...)
 		
 			local commitData = {fromJSON(...)}
 			
