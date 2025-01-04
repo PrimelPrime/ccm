@@ -553,7 +553,7 @@ function recordMovement()
             local positionData = string.format(
                 '[{"x": %.3f, "y": %.3f, "z": %.3f, "rx": %.3f, "ry": %.3f, "rz": %.3f, "cl": %.2f, "cr": %.2f}]',
                 currentPosition[1], currentPosition[2], currentPosition[3],
-                -currentRotation[1], -currentRotation[2], currentRotation[3], 
+                currentRotation[1], currentRotation[2], currentRotation[3], 
                 controlStateLeft, controlStateRight
             )
             
