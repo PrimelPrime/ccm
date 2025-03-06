@@ -91,6 +91,10 @@ local emergencyVehicles = {
     416, 427, 490, 528, 407, 544, 523, 596, 598, 599, 597
 }
 
+local helicopters = {
+    548, 425, 417, 487, 488, 497, 563, 447, 469
+}
+
 local searchlights = {}
 
 function createOccupiedVehicleAndMoveOverPath(marker, pedID, vehicleID, filePath, heightOffset, destroyVehicle, sirenLights, searchlightFollowsPlayer, searchlightOffset, adjustableProperty, adjPropValue, interpolateAdjProp, startValue, endValue, duration, reversePath)
@@ -232,6 +236,11 @@ function createOccupiedVehicleAndMoveOverPath(marker, pedID, vehicleID, filePath
 
         if isElementFrozen(instance.vehicle) then
             setElementFrozen(instance.vehicle, false)
+            for i, heli in ipairs(helicopters) do
+                if instance.vehicle == heli then
+                    setHelicopterRotorSpeed(instance.vehicle, 0.2)
+                end
+            end
         end
         if isElementFrozen(instance.ped) then
             setElementFrozen(instance.ped, false)
