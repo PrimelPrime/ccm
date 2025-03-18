@@ -47,6 +47,7 @@ An easy tool to add NPC-like moving vehicles to your maps without having to writ
 ## Version 2.0.0
 Added the ability to attach unlimited objects to each path recording.  
 Added the ability to attach unlimited effects to each path recording.  
+Added the ability to attach umlimited texts to each path recording. Use with caution!  
 Added the ability to now choose your vehicle settings such as overrideLights, wheelSize, vehicleSmokeTrail(Stuntplane, Cropduster) and more.  
 Added the option to spawn endless vehicles that drive over the recorded path.  
 Along with this comes a menu to create your own set of vehicles that should spawn at random and then drive over the selected path, an edit box is present to set the spawn intveral either with only one
