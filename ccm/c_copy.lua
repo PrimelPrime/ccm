@@ -225,11 +225,19 @@ addEventHandler("onClientKey", root, copyToClipboard)
 
 -- Memo to input copy positions
 function cMemoFPlayer()
+    if fileExists("bind.json") then
+        local bindFile = fileOpen("bind.json")
+        local bindData = fromJSON(fileRead(bindFile, fileGetSize(bindFile)))
+        fileClose(bindFile)
+        settingsBind = bindData.bind
+    else
+        settingsBind = "N"
+    end
 
     if infoEnabled then
         outputChatBox("")
-        outputChatBox("Press:#FF0000 " .. copyKey .. "#FFFFFF to copy an element to the Memo Clipboard.\nPress #FF0000V #FFFFFFto open the Clipboard.", 255, 255, 255, true)
-        outputChatBox("Press #FF0000N #FFFFFFto start/stop recording paths.", 255, 255, 255, true)
+        outputChatBox("Press:#FF0000 " .. copyKey .. "#FFFFFF to copy an element to the Memo Clipboard.\nPress: #FF0000V #FFFFFFto open the Clipboard.", 255, 255, 255, true)
+        outputChatBox("Press: #FF0000" .. settingsBind .. " #FFFFFFto start/stop recording paths.", 255, 255, 255, true)
     end
 
     local screenWidth, screenHeight = guiGetScreenSize()
@@ -463,7 +471,7 @@ addEventHandler("onClientResourceStart", resourceRoot, cMemoFPlayer)
 isMemoMenuOpen = false
 
 function showMemoGui(key, state)
-    if isMTAWindowActive() or DGS:dgsGetInputMode() == "no_binds" then return end
+    if isMTAWindowActive() or DGS:dgsGetInputMode() == "no_binds" or isInGuiEditField then return end
 
     local vehicle = getPedOccupiedVehicle(localPlayer)
     if vehicle then
@@ -575,6 +583,81 @@ function normalizeRotation(rotation)
     end
 end
 
+function requestFileCreation(filePath, argumentValues)
+    local objects = {}
+    local effects = {}
+    local texts = {}
+    local vehicleData = {}
+
+    if DGS:dgsGridListGetRowCount(objectMenuGridList) > 0 then
+        objects = objectsAttachedToVehicle
+    end
+
+    if DGS:dgsGridListGetRowCount(effectMenuGridList) > 0 then
+        effects = effectsAttachedToVehicle
+    end
+
+    if DGS:dgsGridListGetRowCount(textMenuGridList) > 0 then
+        texts = textsAttachedToVehicle
+    end
+    
+    local overrideLightsSwitch = DGS:dgsSwitchButtonGetState(switchButtons[7])
+    if overrideLightsSwitch then
+        overrideLights = 2
+    else
+        overrideLights = 1
+    end
+    local vehicleSmokeTrail = DGS:dgsSwitchButtonGetState(switchButtons[8]) or false
+    local rotX, rotY, rotZ = tonumber(DGS:dgsGetText(editFields[31])) or 0, tonumber(DGS:dgsGetText(editFields[32])) or 0, tonumber(DGS:dgsGetText(editFields[33])) or 0
+    --Vehicle Wheel States
+    local vehicleWheelStateText = DGS:dgsGetText(editFields[34])
+    if vehicleWheelStateText:find(",") then
+        local wheel = split(vehicleWheelStateText, ",")
+        frontLeft = tonumber(wheel[1]) or -1
+        rearLeft = tonumber(wheel[2]) or -1
+        frontRight = tonumber(wheel[3]) or -1 
+        rearRight = tonumber(wheel[4]) or -1
+    else
+        vehicleWheelState = tonumber(vehicleWheelStateText) or -1
+    end
+
+    --Vehicle Wheel Size
+    local wheelSizeText = DGS:dgsGetText(editFields[35])
+    if wheelSizeText:find(",") then
+        local value = split(wheelSizeText, ",")
+        axle = tonumber(value[1]) or 1
+        size = tonumber(value[2]) or 1
+        if axle == 1 then
+            axle = "front_axle"
+        elseif axle == 2 then
+            axle = "rear_axle"
+        else
+            axle = "all_wheels"
+        end
+    end
+    
+    local vehicleAlpha = tonumber(DGS:dgsGetText(editFields[36])) or 255
+    table.insert(vehicleData, {
+        overrideVehicleLights = overrideLights,
+        vehicleSmokeTrail = vehicleSmokeTrail,
+        rotX = rotX,
+        rotY = rotY,
+        rotZ = rotZ,
+        wheelStates = {
+            frontLeft = frontLeft or -1,
+            rearLeft = rearLeft or -1,
+            frontRight = frontRight or -1,
+            rearRight = rearRight or -1
+        },
+        wheelSize = {
+            axle = axle or "all_wheels",
+            size = size or 1
+        },
+        vehicleAlpha = vehicleAlpha
+    })
+    triggerServerEvent("onRequestFileCreation", localPlayer, filePath, argumentValues, objects, effects, vehicleData, texts)
+end
+
 function toggleTimer()
     if isMTAWindowActive() or guiGetInputMode() == "no_binds" then return end
     
@@ -584,6 +667,11 @@ function toggleTimer()
         DGS:dgsSetVisible(mainRecordMenu, false)
         DGS:dgsSetVisible(pathsMenu, false)
         DGS:dgsSetVisible(mainMemoMenu, false)
+        DGS:dgsSetVisible(mainAdditionalMenu, false)
+        DGS:dgsSetVisible(objectMenu, false)
+        DGS:dgsSetVisible(effectMenu, false)
+        DGS:dgsSetVisible(vehicleMenu, false)
+        DGS:dgsSetVisible(vehicleGroupMenu, false)
         showCursor(false)
 
         if not timer then
@@ -601,17 +689,16 @@ function toggleTimer()
             argumentValues.startValue = DGS:dgsGetText(editFields[9])
             argumentValues.endValue = DGS:dgsGetText(editFields[10])
             argumentValues.duration = DGS:dgsGetText(editFields[11])
-            argumentValues.reversePath = DGS:dgsSwitchButtonGetState(switchButtons[6])
             
             local filePath = DGS:dgsGetText(editFields[3])
-            if filePath == "" or filePath == "Choose a file name" then
+            if filePath == "" or filePath == "Choose any file name" then
                 filePath = "path"
             end
-
+            
             filePath = sanitizeFilename(filePath)
             
             outputDebugString("[CCM]: Sending file creation request: " .. filePath, 4, 100, 255, 100)
-            triggerServerEvent("onRequestFileCreation", localPlayer, filePath, argumentValues)
+            requestFileCreation(filePath, argumentValues)
             timer = setTimer(recordMovement, outputInterval, 0)
         elseif not vehicle then
             outputChatBox("#FF0000ERROR#FFFFFF: You are not in a vehicle.", 255, 255, 255, true)
