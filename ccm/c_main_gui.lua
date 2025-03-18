@@ -1671,7 +1671,6 @@ function createMainGuiMenu()
     DGS:dgsGridListAddColumn(vehicleDataGridList, "vehicleWheelState", 0.5)
     DGS:dgsGridListAddColumn(vehicleDataGridList, "wheelSize", 0.5)
     DGS:dgsGridListAddColumn(vehicleDataGridList, "vehicleAlpha", 0.5)
-    outputChatBox(tostring(DGS:dgsGridListGetRowCount(vehicleDataGridList)))
 
     local defaultValues = {
         overrideLights = 2,
