@@ -1,0 +1,256 @@
+<catalog type="vehicle">
+	<group name="Aircraft">
+		<group name="Helicopters">
+			<vehicle model="417" name="Leviathan" keywords="" />
+			<vehicle model="425" name="Hunter" keywords="" />
+			<vehicle model="447" name="Seasparrow" keywords="" />
+			<vehicle model="469" name="Sparrow" keywords="" />
+			<vehicle model="487" name="Maverick" keywords="" />
+			<vehicle model="488" name="News Chopper" keywords="" />
+			<vehicle model="497" name="Police Maverick" keywords="" />
+			<vehicle model="548" name="Cargobob" keywords="" />
+			<vehicle model="563" name="Raindance" keywords="" />
+		</group>
+		<group name="Planes, Jets and Airlines">
+			<vehicle model="460" name="Skimmer" keywords="" />
+			<vehicle model="476" name="Rustler" keywords="" />
+			<vehicle model="511" name="Beagle" keywords="" />
+			<vehicle model="512" name="Cropduster" keywords="" />
+			<vehicle model="513" name="Stuntplane" keywords="" />
+			<vehicle model="519" name="Shamal" keywords="" />
+			<vehicle model="520" name="Hydra" keywords="" />
+			<vehicle model="553" name="Nevada" keywords="" />
+			<vehicle model="577" name="AT-400" keywords="" />
+			<vehicle model="592" name="Andromada" keywords="" />
+			<vehicle model="593" name="Dodo" keywords="" />
+		</group>
+	</group>
+	<group name="Bikes">
+		<group name="Motorbikes">
+			<vehicle model="448" name="Pizzaboy" keywords="" />
+			<vehicle model="461" name="PCJ-600" keywords="" />
+			<vehicle model="462" name="Faggio" keywords="" />
+			<vehicle model="463" name="Freeway" keywords="" />
+			<vehicle model="468" name="Sanchez" keywords="" />
+			<vehicle model="471" name="Quad" keywords="" />
+			<vehicle model="521" name="FCR-900" keywords="" />
+			<vehicle model="522" name="NRG-500" keywords="" />
+			<vehicle model="523" name="HPV1000" keywords="" />
+			<vehicle model="581" name="BF-400" keywords="" />
+			<vehicle model="586" name="Wayfarer" keywords="" />
+		</group>
+		<group name="Bicycles">
+			<vehicle model="509" name="Bike" keywords="" />
+			<vehicle model="481" name="BMX" keywords="" />
+			<vehicle model="510" name="Mountain Bike" keywords="" />
+		</group>
+	</group>
+	<group name="Boats">
+		<vehicle model="430" name="Predator" keywords="" />
+		<vehicle model="446" name="Squalo" keywords="" />
+		<vehicle model="452" name="Speeder" keywords="" />
+		<vehicle model="453" name="Reefer" keywords="" />
+		<vehicle model="454" name="Tropic" keywords="" />
+		<vehicle model="472" name="Coastguard" keywords="" />
+		<vehicle model="473" name="Dinghy" keywords="" />
+		<vehicle model="484" name="Marquis" keywords="" />
+		<vehicle model="493" name="Jetmax" keywords="" />
+		<vehicle model="595" name="Launch" keywords="" />
+	</group>
+	<group name="Cars">
+		<group name="2-Door">
+			<vehicle model="401" name="Bravura" keywords="" />
+			<vehicle model="410" name="Manana" keywords="" />
+			<vehicle model="436" name="Previon" keywords="" />
+			<vehicle model="474" name="Hermes" keywords="" />
+			<vehicle model="491" name="Virgo" keywords="" />
+			<vehicle model="496" name="Blista Compact" keywords="" />
+			<vehicle model="517" name="Majestic" keywords="" />
+			<vehicle model="526" name="Fortune" keywords="" />
+			<vehicle model="527" name="Cadrona" keywords="" />
+			<vehicle model="533" name="Feltzer" keywords="" />
+			<vehicle model="545" name="Hustler" keywords="" />
+			<vehicle model="549" name="Tampa" keywords="" />
+			<vehicle model="439" name="Stallion" keywords="" />
+			<vehicle model="475" name="Sabre" keywords="" />
+			<vehicle model="542" name="Clover" keywords="" />
+		</group>
+		<group name="4-Door">
+			<vehicle model="405" name="Sentinel" keywords="" />
+			<vehicle model="409" name="Stretch" keywords="" />
+			<vehicle model="420" name="Taxi" keywords="" />
+			<vehicle model="421" name="Washington" keywords="" />
+			<vehicle model="426" name="Premier" keywords="" />
+			<vehicle model="438" name="Cabbie" keywords="" />
+			<vehicle model="445" name="Admiral" keywords="" />
+			<vehicle model="466" name="Glendale" keywords="" />
+			<vehicle model="467" name="Oceanic" keywords="" />
+			<vehicle model="492" name="Greenwood" keywords="" />
+			<vehicle model="507" name="Elegant" keywords="" />
+			<vehicle model="516" name="Nebula" keywords="" />
+			<vehicle model="529" name="Willard" keywords="" />
+			<vehicle model="540" name="Vincent" keywords="" />
+			<vehicle model="546" name="Intruder" keywords="" />
+			<vehicle model="547" name="Primo" keywords="" />
+			<vehicle model="550" name="Sunrise" keywords="" />
+			<vehicle model="551" name="Merit" keywords="" />
+			<vehicle model="566" name="Tahoma" keywords="" />
+			<vehicle model="580" name="Stafford" keywords="" />
+			<vehicle model="585" name="Emperor" keywords="" />
+		</group>
+		<group name="Lowriders">
+			<vehicle model="412" name="Voodoo" keywords="" />
+			<vehicle model="419" name="Esperanto" keywords="" />
+			<vehicle model="518" name="Buccaneer" keywords="" />
+			<vehicle model="534" name="Remington" keywords="" />
+			<vehicle model="535" name="Slamvan" keywords="" />
+			<vehicle model="536" name="Blade" keywords="" />
+			<vehicle model="567" name="Savanna" keywords="" />
+			<vehicle model="575" name="Broadway" keywords="" />
+			<vehicle model="576" name="Tornado" keywords="" />
+		</group>
+		<group name="Sports Cars">
+			<vehicle model="402" name="Buffalo" keywords="" />
+			<vehicle model="411" name="Infernus" keywords="" />
+			<vehicle model="415" name="Cheetah" keywords="" />
+			<vehicle model="429" name="Banshee" keywords="" />
+			<vehicle model="451" name="Turismo" keywords="" />
+			<vehicle model="477" name="ZR-350" keywords="" />
+			<vehicle model="480" name="Comet" keywords="" />
+			<vehicle model="506" name="Super GT" keywords="" />
+			<vehicle model="541" name="Bullet" keywords="" />
+			<vehicle model="555" name="Windsor" keywords="" />
+			<vehicle model="558" name="Uranus" keywords="" />
+			<vehicle model="559" name="Jester" keywords="" />
+			<vehicle model="560" name="Sultan" keywords="" />
+			<vehicle model="562" name="Elegy" keywords="" />
+			<vehicle model="565" name="Flash" keywords="" />
+			<vehicle model="587" name="Euros" keywords="" />
+			<vehicle model="602" name="Alpha" keywords="" />
+			<vehicle model="603" name="Phoenix" keywords="" />
+		</group>
+	</group>
+	<group name="Emergency">
+		<vehicle model="407" name="Fire Truck" keywords="" />
+		<vehicle model="416" name="Ambulance" keywords="" />
+		<vehicle model="427" name="Enforcer" keywords="" />
+		<vehicle model="432" name="Rhino" keywords="" />
+		<vehicle model="433" name="Barracks" keywords="" />
+		<vehicle model="490" name="Ranger" keywords="" />
+		<vehicle model="528" name="FBI Truck" keywords="" />
+		<vehicle model="544" name="Fire Truck Ladder" keywords="" />
+		<vehicle model="596" name="Police Car (LSPD)" keywords="" />
+		<vehicle model="597" name="Police Car (SFPD)" keywords="" />
+		<vehicle model="598" name="Police Car (LVPD)" keywords="" />
+		<vehicle model="599" name="Police Ranger" keywords="" />
+		<vehicle model="601" name="S.W.A.T." keywords="" />
+	</group>
+	<group name="Heavy Vehicles">
+		<group name="Industrial">
+			<vehicle model="403" name="Linerunner" keywords="" />
+			<vehicle model="406" name="Dumper" keywords="" />
+			<vehicle model="408" name="Trashmaster" keywords="" />
+			<vehicle model="443" name="Packer" keywords="" />
+			<vehicle model="455" name="Flatbed" keywords="" />
+			<vehicle model="486" name="Dozer" keywords="" />
+			<vehicle model="514" name="Tanker" keywords="" />
+			<vehicle model="515" name="Roadtrain" keywords="" />
+			<vehicle model="524" name="Cement Truck" keywords="" />
+			<vehicle model="525" name="Tow Truck" keywords="" />
+			<vehicle model="530" name="Forklift" keywords="" />
+			<vehicle model="552" name="Utility Van" keywords="" />
+			<vehicle model="573" name="Dune" keywords="" />
+			<vehicle model="574" name="Sweeper" keywords="" />
+			<vehicle model="578" name="DFT-30" keywords="" />
+		</group>
+		<group name="Trailers">
+			<vehicle model="435" name="Trailer (Small)" keywords="" />
+			<vehicle model="450" name="Trailer (Flatbed)" keywords="" />
+			<vehicle model="584" name="Trailer (Fuel)" keywords="" />
+			<vehicle model="591" name="Trailer (Freight)" keywords="" />
+			<vehicle model="606" name="Trailer (Baggage Covered)" keywords="" />
+			<vehicle model="607" name="Trailer (Baggage Uncovered)" keywords="" />
+			<vehicle model="608" name="Stairs Trailer" keywords="" />
+			<vehicle model="610" name="Farm Trailer" keywords="" />
+			<vehicle model="611" name="Trailer (Street Clean)" keywords="" />
+		</group>
+		<group name="Trucks">
+			<vehicle model="414" name="Benson" keywords="" />
+			<vehicle model="422" name="Bobcat" keywords="" />
+			<vehicle model="428" name="Securicar" keywords="" />
+			<vehicle model="456" name="Yankee" keywords="" />
+			<vehicle model="478" name="Walton" keywords="" />
+			<vehicle model="498" name="Boxville" keywords="" />
+			<vehicle model="499" name="Benson (Large)" keywords="" />
+			<vehicle model="543" name="Sadler" keywords="" />
+			<vehicle model="554" name="Yosemite" keywords="" />
+			<vehicle model="600" name="Picador" keywords="" />
+			<vehicle model="609" name="Black Boxville" keywords="" />
+		</group>
+		<group name="Vans">
+			<vehicle model="413" name="Pony" keywords="" />
+			<vehicle model="418" name="Moonbeam" keywords="" />
+			<vehicle model="440" name="Rumpo" keywords="" />
+			<vehicle model="459" name="Mule" keywords="" />
+			<vehicle model="482" name="Burrito" keywords="" />
+			<vehicle model="483" name="Camper" keywords="" />
+			<vehicle model="508" name="Journey" keywords="" />
+			<vehicle model="582" name="News Van" keywords="" />
+		</group>
+		<group name="Trains">
+			<vehicle model="537" name="Freight Train" keywords="" />
+			<vehicle model="538" name="Brown Streak" keywords="" />
+			<vehicle model="449" name="Tram" keywords="" />
+			<vehicle model="569" name="Flat Freight" keywords="" />
+			<vehicle model="570" name="Brown Streak Carriage" keywords="" />
+			<vehicle model="590" name="Box Freight" keywords="" />
+		</group>
+	</group>
+	<group name="Misc">
+		<group name="Other">
+			<vehicle model="423" name="Mr. Whoopee" keywords="" />
+			<vehicle model="424" name="BF Injection" keywords="" />
+			<vehicle model="431" name="Bus" keywords="" />
+			<vehicle model="434" name="Hotknife" keywords="" />
+			<vehicle model="437" name="Coach" keywords="" />
+			<vehicle model="444" name="Monster" keywords="" />
+			<vehicle model="457" name="Caddy" keywords="" />
+			<vehicle model="485" name="Baggage" keywords="" />
+			<vehicle model="494" name="Hotring Racer" keywords="" />
+			<vehicle model="502" name="Hotring Racer 2" keywords="" />
+			<vehicle model="503" name="Hotring Racer 3" keywords="" />
+			<vehicle model="504" name="Bloodring Banger" keywords="" />
+			<vehicle model="531" name="Tractor" keywords="" />
+			<vehicle model="532" name="Combine Harvester" keywords="" />
+			<vehicle model="539" name="Vortex" keywords="" />
+			<vehicle model="556" name="Monster 2" keywords="" />
+			<vehicle model="557" name="Monster 3" keywords="" />
+			<vehicle model="568" name="Bandito" keywords="" />
+			<vehicle model="571" name="Kart" keywords="" />
+			<vehicle model="572" name="Mower" keywords="" />
+			<vehicle model="583" name="Tug" keywords="" />
+			<vehicle model="588" name="Hotdog" keywords="" />
+		</group>
+		<group name="RC Vehicles">
+			<vehicle model="441" name="RC Bandit" keywords="" />
+			<vehicle model="464" name="RC Baron" keywords="" />
+			<vehicle model="465" name="RC Raider" keywords="" />
+			<vehicle model="501" name="RC Goblin" keywords="" />
+			<vehicle model="564" name="RC Tiger" keywords="" />
+		</group>
+	</group>
+	<group name="SUVs and Wagons">
+		<vehicle model="400" name="Landstalker" keywords="" />
+		<vehicle model="404" name="Perennial" keywords="" />
+		<vehicle model="442" name="Romero" keywords="" />
+		<vehicle model="458" name="Solair" keywords="" />
+		<vehicle model="470" name="Patriot" keywords="" />
+		<vehicle model="479" name="Regina" keywords="" />
+		<vehicle model="489" name="Rancher" keywords="" />
+		<vehicle model="495" name="Sandking" keywords="" />
+		<vehicle model="500" name="Mesa" keywords="" />
+		<vehicle model="579" name="Huntley" keywords="" />
+		<vehicle model="561" name="Stratum" keywords="" />
+		<vehicle model="589" name="Club" keywords="" />
+	</group>
+</catalog>

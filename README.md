@@ -44,6 +44,28 @@ An easy tool to add NPC-like moving vehicles to your maps without having to writ
 
 > Enjoy!
 
+## Version 2.0.0
+Added the ability to attach unlimited objects to each path recording.  
+Added the ability to attach unlimited effects to each path recording.  
+Added the ability to now choose your vehicle settings such as overrideLights, wheelSize, vehicleSmokeTrail(Stuntplane, Cropduster) and more.  
+Added the option to spawn endless vehicles that drive over the recorded path.  
+Along with this comes a menu to create your own set of vehicles that should spawn at random and then drive over the selected path, an edit box is present to set the spawn intveral either with only one
+integer or two. If two are chosen each interval will be drawn through math.random(firstInteger, secondInteger).  
+This will only work if the first integer is smaller than the second one otherwise it will revert back to its default value of 1 second!  
+Added a realtime preview to the object and effect menu, as well as the searchlight and the adjustable property settings.  
+Added that menus now stay open once opened.  
+Added a camera function while the menu is open use q = right, e = left, w = down, s = up, r = zoom in, f = zoom out(These settings can be changed under the settings menu)  
+Added a settings menu with which you can rebind all your keys.  
+
+Relocated reverse path that can now be found inside the additional options menu to make the menu somewhat friendlier to navigate
+and also to have the ability to change some options more dynamically such as the aforementioned and endless vehicles.
+
+Changed how you now interact with the menu, before everytime you would enter an edit box it would remove anything that was already written inside of it. Now it will only remove once you double click on the edit box or the default text is present.  
+
+Changed some functions inside the util.lua and cached several functions to help with performance.  
+
+Fixed that trains now work correctly when used independently.  
+
 ## Version 1.1.0
 The vehicle the player sits in is now recorded properly.
 (Height Offset should not be needed anymore)
