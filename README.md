@@ -20,7 +20,7 @@
                   --------\::/----/----------------\::/----/----------------\::/----/--------
                   ---------\/____/------------------\/____/------------------\/____/---------
                   ---------------------------------------------------------------------------
-# CCM - Copy and Car Movement Tool Version 1.1.0 for MTA:SA
+# CCM - Copy and Car Movement Tool Version 2.0.0 for MTA:SA
 
 An easy tool to add NPC-like moving vehicles to your maps without having to write them yourself!
 
@@ -50,7 +50,7 @@ Added the ability to attach unlimited effects to each path recording.
 Added the ability to attach umlimited texts to each path recording. Use with caution!  
 Added the ability to now choose your vehicle settings such as overrideLights, wheelSize, vehicleSmokeTrail(Stuntplane, Cropduster) and more.  
 Added the option to spawn endless vehicles that drive over the recorded path.  
-Along with this comes a menu to create your own set of vehicles that should spawn at random and then drive over the selected path, an edit box is present to set the spawn intveral either with only one
+Along with this comes a menu to create your own set of vehicles that should spawn at random and then drive over the selected path, an edit box is present to set the spawn interval either with only one
 integer or two. If two are chosen each interval will be drawn through math.random(firstInteger, secondInteger).  
 This will only work if the first integer is smaller than the second one otherwise it will revert back to its default value of 1 second!  
 Added a realtime preview to the object and effect menu, as well as the searchlight and the adjustable property settings.  
