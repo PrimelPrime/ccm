@@ -121,7 +121,7 @@ function dxDraw3DText(text, x, y, z, scale, font, color, maxDistance, colorCoded
     end
 end
 
-function readPathFromFile(filePath, reverse)
+function readPathFromFile(filePath, reverse, mirror, offset)
     local file = fileOpen(filePath)
     if not file then
         outputDebugString("Failed to open file: " .. filePath)
@@ -145,16 +145,63 @@ function readPathFromFile(filePath, reverse)
         end
     end
 
+    local newPath = {}
+    for i, point in ipairs(flattenedPath) do
+        newPath[i] = {
+            x = point.x,
+            y = point.y,
+            z = point.z,
+            rx = point.rx,
+            ry = point.ry,
+            rz = point.rz,
+            cl = point.cl,
+            cr = point.cr
+        }
+    end
+
     -- Reverse the path if the reverse option is true
     if reverse then
         local reversedPath = {}
-        for i = #flattenedPath, 1, -1 do
-            table_insert(reversedPath, flattenedPath[i])
+        for i = #newPath, 1, -1 do
+            table_insert(reversedPath, newPath[i])
         end
-        flattenedPath = reversedPath
+        newPath = reversedPath
+    end
+    
+    -- Mirror the path if a mirror axis is specified
+    if mirror then
+        local offsetX = offset and newPath[1].x + offset[1] or 0
+        local offsetY = offset and newPath[1].y + offset[2] or 0
+        local offsetZ = offset and newPath[1].z + offset[3] or 0
+        
+        for i, point in ipairs(newPath) do
+            if mirror == "x" then
+                point.y = -point.y + 2 * offsetY
+                if point.rz then
+                    point.rz = (180 - point.rz) % 360
+                end
+            elseif mirror == "y" then
+                point.x = -point.x + 2 * offsetX
+                if point.rz then
+                    point.rz = (360 - point.rz) % 360
+                end
+            elseif mirror == "z" then
+                point.z = -point.z + 2 * offsetZ
+                if point.rx then
+                    point.rx = (360 - point.rx) % 360
+                end
+            end
+            
+            -- Adjust control states if they exist (for steering)
+            if point.cl and point.cr then
+                local temp = point.cl
+                point.cl = point.cr
+                point.cr = temp
+            end
+        end
     end
 
-    return flattenedPath
+    return newPath
 end
 
 function readDataFromFile(filePath)
@@ -259,7 +306,10 @@ function createOccupiedVehicleAndMoveOverPath(
     objectDataPath, 
     effectDataPath, 
     vehicleDataPath,
-    textDataPath
+    textDataPath,
+    mirrorPath,
+    mirrorOffset,
+    endlessVehiclesPeds
 )
 
     --Set default values for optional arguments if not provided
@@ -286,6 +336,9 @@ function createOccupiedVehicleAndMoveOverPath(
     effectDataPath = effectDataPath or nil
     vehicleDataPath = vehicleDataPath or nil
     textDataPath = textDataPath or nil
+    mirrorPath = mirrorPath or nil
+    mirrorOffset = mirrorOffset or {0, 0, 0}
+    endlessVehiclesPeds = endlessVehiclesPeds or false
 
     if objectDataPath ~= nil then
         objectData = readDataFromFile(objectDataPath)
@@ -331,7 +384,17 @@ function createOccupiedVehicleAndMoveOverPath(
         textData = readDataFromFile(textDataPath)
     end
 
-    local path = readPathFromFile(filePath, reversePath)
+    if type(mirrorOffset) == "table" then
+        mirrorOffsetX = mirrorOffset[1] or 0
+        mirrorOffsetY = mirrorOffset[2] or 0
+        mirrorOffsetZ = mirrorOffset[3] or 0
+    else
+        mirrorOffsetX, mirrorOffsetY, mirrorOffsetZ = 0, 0, 0
+    end
+
+    mirrorOffset = {mirrorOffsetX, mirrorOffsetY, mirrorOffsetZ}
+
+    local path = readPathFromFile(filePath, reversePath, mirrorPath, mirrorOffset)
     if not path then
         outputDebugString("Failed to read path from file: " .. filePath)
         return
@@ -375,34 +438,43 @@ function createOccupiedVehicleAndMoveOverPath(
     function destroyInstance(instance)
         if not instance then return end
 
-        local elements = {instance.ped, instance.vehicle, instance.searchlight}
+        local elements = {}
+        if instance.ped and isElement(instance.ped) then
+            table_insert(elements, instance.ped)
+        end
+        if instance.vehicle and isElement(instance.vehicle) then
+            table_insert(elements, instance.vehicle)
+        end
+        if instance.searchlight and isElement(instance.searchlight) then
+            table_insert(elements, instance.searchlight)
+        end
         if instance.objects then
-            for i, obj in ipairs(instance.objects) do
-                table_insert(elements, obj)
+            for _, obj in ipairs(instance.objects) do
+                if isElement(obj) then
+                    table_insert(elements, obj)
+                end
             end
         end
-
         if instance.effects then
-            for i, effect in ipairs(instance.effects) do
-                table_insert(elements, effect)
-            end
-        end
-        
-        for i, element in ipairs(elements) do
-            if isElement(element) then
-                destroyElement(element)
+            for _, effect in ipairs(instance.effects) do
+                if isElement(effect) then
+                    table_insert(elements, effect)
+                end
             end
         end
 
-        for i, table in ipairs({searchlights, attachedObjects, attachedEffects, activeInstances, attachedTexts}) do
-            for j = #table, 1, -1 do
-                if table[j] == instance then
-                    table_remove(table, j)
+        for _, element in ipairs(elements) do
+            destroyElement(element)
+        end
+
+        for _, table in ipairs({searchlights, attachedObjects, attachedEffects, activeInstances, attachedTexts}) do
+            for i = #table, 1, -1 do
+                if table[i] == instance then
+                    table_remove(table, i)
                     break
                 end
             end
         end
-        
         instance.isMoving = false
     end
     
@@ -446,13 +518,15 @@ function createOccupiedVehicleAndMoveOverPath(
             end
             
             vehicleID = endlessVehiclesGroup[math_random(#endlessVehiclesGroup)]
-            pedID = pedIds[math_random(#pedIds)]
-            instance.ped = createPed(pedID, path[1].x, path[1].y, path[1].z)
-
             instance.vehicle = createVehicle(vehicleID, path[1].x, path[1].y, path[1].z + heightOffset, path[1].rx + (vRotX or 0), path[1].ry + (vRotY or 0), path[1].rz + (vRotZ or 0))
             setVehicleEngineState(instance.vehicle, true)
             setVehicleOverrideLights(instance.vehicle, overrideVehicleLights or 2)
-            warpPedIntoVehicle(instance.ped, instance.vehicle)
+
+            if endlessVehiclesPeds then
+                pedID = pedIds[math_random(#pedIds)]
+                instance.ped = createPed(pedID, path[1].x, path[1].y, path[1].z)
+                warpPedIntoVehicle(instance.ped, instance.vehicle)
+            end
 
             if wheelStates then
                 setVehicleWheelStates(instance.vehicle, wheelStates)
@@ -462,7 +536,9 @@ function createOccupiedVehicleAndMoveOverPath(
 
             if vehicleAlpha then
                 setElementAlpha(instance.vehicle, vehicleAlpha)
-                setElementAlpha(instance.ped, vehicleAlpha)
+                if endlessVehiclesPeds then
+                    setElementAlpha(instance.ped, vehicleAlpha)
+                end
             end
         end
 
@@ -620,10 +696,14 @@ function createOccupiedVehicleAndMoveOverPath(
                     setTimer(function() createElementInstance(path, endlessVehiclesGroup) end, 100, 1)
                 end
             else
-                setPedControlState(instance.ped, "accelerate", false)
-                setPedControlState(instance.ped, "handbrake", true)
-                setPedAnalogControlState(instance.ped, "vehicle_left", 0)
-                setPedAnalogControlState(instance.ped, "vehicle_right", 0)
+                if not endlessVehiclesPeds and endlessVehicles then
+                    -- Skip ped controls if the vehicle is not occupied
+                else
+                    setPedControlState(instance.ped, "accelerate", false)
+                    setPedControlState(instance.ped, "handbrake", true)
+                    setPedAnalogControlState(instance.ped, "vehicle_left", 0)
+                    setPedAnalogControlState(instance.ped, "vehicle_right", 0)
+                end
                 instance.isMoving = false
             end
             return
@@ -637,17 +717,20 @@ function createOccupiedVehicleAndMoveOverPath(
                 end
             end
         end
-        if isElementFrozen(instance.ped) then
+        if (isElement(instance.ped) and isElementFrozen(instance.ped)) then
             setElementFrozen(instance.ped, false)
         end
     
         if path[index] then
             setElementPosition(instance.vehicle, path[index].x, path[index].y, path[index].z + heightOffset)
             setElementRotation(instance.vehicle, path[index].rx + (vRotX or 0), path[index].ry + (vRotY or 0), path[index].rz + (vRotZ or 0))
-            if path[index].cl and path[index].cl > 0 then
-                setPedAnalogControlState(instance.ped, "vehicle_left", path[index].cl)
-            elseif path[index].cr then
-                setPedAnalogControlState(instance.ped, "vehicle_right", path[index].cr)
+            --outputChatBox("Vehicle position: " .. path[index].x .. ", " .. path[index].y .. ", " .. path[index].z + heightOffset)
+            if isElement(instance.ped) then
+                if path[index].cl and path[index].cl > 0 then
+                    setPedAnalogControlState(instance.ped, "vehicle_left", path[index].cl)
+                elseif path[index].cr then
+                    setPedAnalogControlState(instance.ped, "vehicle_right", path[index].cr)
+                end
             end
 
             if instance.objects then
@@ -669,7 +752,7 @@ function createOccupiedVehicleAndMoveOverPath(
                     end
                 end
             end
-
+    
             setTimer(function()
                 moveVehicleAlongPath(instance, path, index + 1)
             end, 5, 1)
@@ -684,10 +767,12 @@ function createOccupiedVehicleAndMoveOverPath(
         local function spawnVehicle()
             local newInstance = createElementInstance(path, endlessVehiclesGroup)
             newInstance.isMoving = true
-            if not reversePath then
-                setPedControlState(newInstance.ped, "accelerate", true)
-            else
-                setPedControlState(newInstance.ped, "brake_reverse", true)
+            if isElement(newInstance.ped) then
+                if not reversePath then
+                    setPedControlState(newInstance.ped, "accelerate", true)
+                else
+                    setPedControlState(newInstance.ped, "brake_reverse", true)
+                end
             end
             moveVehicleAlongPath(newInstance, path, 1)
             

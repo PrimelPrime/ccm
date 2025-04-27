@@ -76,8 +76,9 @@ local additionalArguments = {
     {name = "endlessVehiclesDelay", toolTip = "The delay between each vehicle spawn in milliseconds. 1000 by default.\nNote: This can handle two integers in the following format \"1000, 2000\" and will spawn vehicles via the math.random method.\nMake sure that the first integer is always smaller than the second integer!", type = "float", text = "Spawn interval"},
     {name = "createVehicleGroup", toolTip = "Creates your own vehicle group that can be used for the endless vehicles.", type = "button", text = "Create Group"},
     {name = "mirrorLabel", type = "label", text = "Mirror Path"},
-    {name = "mirrorPath", toolTip = "Mirrors the path. False by default.", type = "string", text = "Enter Axis; X, Y or Z"},
-    {name = "mirrorPathOffset", toolTip = "The offset for the mirrored path. {0, 0, 0} by default.", type = "table"},
+    {name = "mirrorPath", toolTip = "Mirrors the path on the given axis. Default is none.", type = "selectable", text = "Select Axis"},
+    {name = "mirrorPathOffsetLabel", type = "label", text = "Mirror Path Offset"},
+    {name = "mirrorPathOffset", toolTip = "The offset for the mirrored path. {0, 0, 0} by default.\nNote: Use the same format as in the edit box to set the offset. E.g. 0, 0, 0 would be x = 0, y = 0, z = 0.", type = "float", text = "0, 0, 0"},
 }
 
 local keybinds = {}
@@ -102,6 +103,7 @@ effectsAttachedToVehicle = {}
 textsAttachedToVehicle = {}
 
 local fonts = {"default", "default-bold", "clear", "arial", "sans", "pricedown", "bankgothic", "diploma", "beckett", "unifont"}
+local axis = {"None", "X", "Y", "Z"}
 
 local vehicleIds = {400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415,
 416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433,
@@ -250,6 +252,13 @@ end
 function addVehicleGroupToComboBox()
     DGS:dgsComboBoxClear(selectables[2])
     triggerServerEvent("onRequestVehicleGroups", localPlayer)
+end
+
+function addAxisToComboBox()
+    DGS:dgsComboBoxClear(selectables[3])
+    for i, axisName in ipairs(axis) do
+        DGS:dgsComboBoxAddItem(selectables[3], axisName)
+    end
 end
 
 addEvent("onReceiveVehicleGroups", true)
@@ -2498,6 +2507,27 @@ function createMainGuiMenu()
                     textPathString = "nil"
                 end
 
+                local mirrorPath = DGS:dgsComboBoxGetSelectedItem(selectables[3])
+                if mirrorPath == -1 then
+                    mirrorPath = "nil"
+                else
+                    mirrorPath = "\"" .. DGS:dgsComboBoxGetItemText(selectables[3], mirrorPath):lower() .. "\""
+                end
+
+                local mirrorOffsetText = DGS:dgsGetText(editFields[45])
+                if mirrorOffsetText:find(",") then
+                    local offsetValues = split(mirrorOffsetText, ",")
+                    local mx = tonumber(offsetValues[1]) or 0
+                    local my = tonumber(offsetValues[2]) or 0
+                    local mz = tonumber(offsetValues[3]) or 0
+                    mirrorOffset = string.format("{%d, %d, %d}", mx, my, mz)
+                else
+                    mirrorOffset = "{0, 0, 0}"
+                end
+
+                local endlessVehiclesPeds = DGS:dgsSwitchButtonGetState(switchButtons[12])
+
+
                 --local
 
                 if type(searchlightOffset) ~= "table" then
@@ -2505,7 +2535,7 @@ function createMainGuiMenu()
                 end
 
                 local formattedString = string.format(
-                    "createOccupiedVehicleAndMoveOverPath(%s, %s, %s, \"%s\", %s, %s, %s, %s, {%s, %s, %s}, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    "createOccupiedVehicleAndMoveOverPath(%s, %s, %s, \"%s\", %s, %s, %s, %s, {%s, %s, %s}, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                     markerValue:gsub("[%s%(%)]", ""),
                     arguments.pedID or "0",
                     arguments.vehicleID or "411",
@@ -2530,7 +2560,10 @@ function createMainGuiMenu()
                     objectPathString,
                     effectPathString,
                     vehiclePathString,
-                    textPathString
+                    textPathString,
+                    mirrorPath,
+                    mirrorOffset,
+                    tostring(endlessVehiclesPeds)
                 )
 
                 local currentText = DGS:dgsGetText(mainMemo)
@@ -2743,6 +2776,19 @@ function createMainGuiMenu()
                     elseif not tonumber(value) then
                         DGS:dgsSetText(argumentEdit, argumentText)
                     end
+                elseif argumentName == "mirrorPathOffset" then
+                    local value = DGS:dgsGetText(argumentEdit)
+                    if value:find(",") then
+                        local offsetRange = split(value, ",")
+                        local x = tonumber(offsetRange[1])
+                        local y = tonumber(offsetRange[2])
+                        local z = tonumber(offsetRange[3])
+                        if #offsetRange > 3 then
+                            DGS:dgsSetText(argumentEdit, argumentText)
+                        end
+                    elseif not tonumber(value) then
+                        DGS:dgsSetText(argumentEdit, argumentText)
+                    end
                 elseif argumentType == "float" or argumentType == "integer" then
                     local value = tonumber(DGS:dgsGetText(argumentEdit))
                     if not value or empty then
@@ -2759,7 +2805,7 @@ function createMainGuiMenu()
             local tooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
             DGS:dgsTooltipApplyTo(tooltip, argumentSwitch, argumentToolTip)
             table.insert(switchButtons, argumentSwitch)
-            if argumentName == "destroyVehicle" then
+            if argumentName == "endlessVehiclesPeds" then
                 DGS:dgsSwitchButtonSetState(argumentSwitch, true)
             end
         elseif argumentType == "table" then
@@ -2805,9 +2851,7 @@ function createMainGuiMenu()
             DGS:dgsTooltipApplyTo(tooltip, argumentButton, argumentToolTip)
             table.insert(buttons, argumentButton)
         elseif argumentType == "label" then
-            local argumentLabel = DGS:dgsCreateLabel(declare.marginLeft / 2, y, declare.width / 1.65, declare.height, argumentText, false, mainAdditionalMenu)
-            local tooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
-            DGS:dgsTooltipApplyTo(tooltip, argumentLabel, argumentToolTip)
+            local argumentLabel = DGS:dgsCreateLabel(declare.marginLeft / 2, y + declare.height / 2, declare.width / 1.65, declare.height, argumentText, false, mainAdditionalMenu)
         end
     end
 
@@ -2952,6 +2996,7 @@ function createMainGuiMenu()
     end, false)
 
     addVehicleGroupToComboBox()
+    addAxisToComboBox()
 
     DGS:dgsSetVisible(mainAdditionalMenu, false)
     ------------------------------------------
