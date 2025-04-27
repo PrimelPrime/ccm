@@ -20,7 +20,7 @@
                   --------\::/----/----------------\::/----/----------------\::/----/--------
                   ---------\/____/------------------\/____/------------------\/____/---------
                   ---------------------------------------------------------------------------
-# CCM - Copy and Car Movement Tool Version 2.0.0 for MTA:SA
+# CCM - Copy and Car Movement Tool Version 2.1.0 for MTA:SA
 
 An easy tool to add NPC-like moving vehicles to your maps without having to write them yourself!
 
@@ -43,6 +43,10 @@ An easy tool to add NPC-like moving vehicles to your maps without having to writ
 > Restart your resource with "/restart ccm"
 
 > Enjoy!
+
+## Version 2.1.0
+Added the ability to mirror path recordings as well as being able to add offsets - see addition options panel.  
+Added a switchbutton to turn of peds when using endless vehicles if there are problems with performance.  
 
 ## Version 2.0.0
 Added the ability to attach unlimited objects to each path recording.  
