@@ -71,9 +71,13 @@ local textArguments = {
 local additionalArguments = {
     {name = "reversePath", toolTip = "Reverses the recorded path. False by default.", type = "boolean", text = "Reverse path"},
     {name = "endlessVehicles", toolTip = "If set to true the vehicles will drive endlessley over the recorded path with a set interval that is chosen below. False by default.\nNote: Settings this to true will also choose peds at random. This also applies to vehicles that have been attached.", type = "boolean", text = "Endless Vehicles"},
+    {name = "endlessVehiclesPeds", toolTip = "If set to true the vehicles will be occupied by peds.\nNote: Turn this setting off for performance improvements.", type = "boolean", text = "Endless Peds"},
     {name = "endlessVehiclesGroup", toolTip = "The group of vehicles that should be spawned. default by default: Including most street racers, lowriders, muscle cars and other handpicked vehicles.\nNote: default is generally suited for path recordings that have been done with the Infernus.", type = "selectable", text = "Vehicles group"},
     {name = "endlessVehiclesDelay", toolTip = "The delay between each vehicle spawn in milliseconds. 1000 by default.\nNote: This can handle two integers in the following format \"1000, 2000\" and will spawn vehicles via the math.random method.\nMake sure that the first integer is always smaller than the second integer!", type = "float", text = "Spawn interval"},
     {name = "createVehicleGroup", toolTip = "Creates your own vehicle group that can be used for the endless vehicles.", type = "button", text = "Create Group"},
+    {name = "mirrorLabel", type = "label", text = "Mirror Path"},
+    {name = "mirrorPath", toolTip = "Mirrors the path. False by default.", type = "string", text = "Enter Axis; X, Y or Z"},
+    {name = "mirrorPathOffset", toolTip = "The offset for the mirrored path. {0, 0, 0} by default.", type = "table"},
 }
 
 local keybinds = {}
@@ -2800,6 +2804,10 @@ function createMainGuiMenu()
             local tooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
             DGS:dgsTooltipApplyTo(tooltip, argumentButton, argumentToolTip)
             table.insert(buttons, argumentButton)
+        elseif argumentType == "label" then
+            local argumentLabel = DGS:dgsCreateLabel(declare.marginLeft / 2, y, declare.width / 1.65, declare.height, argumentText, false, mainAdditionalMenu)
+            local tooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
+            DGS:dgsTooltipApplyTo(tooltip, argumentLabel, argumentToolTip)
         end
     end
 
