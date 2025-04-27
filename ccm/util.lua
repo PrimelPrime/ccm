@@ -121,6 +121,17 @@ function dxDraw3DText(text, x, y, z, scale, font, color, maxDistance, colorCoded
     end
 end
 
+function simulateWheelRotation(vehicle, direction, speed)
+    if not isElement(vehicle) then return end
+
+    local currentRotation = getVehicleComponentRotation(vehicle, "wheel_rf_dummy") -- just get any tire
+    local rotationChange = direction * speed
+    local newRotation = currentRotation + rotationChange
+
+    setVehicleWheelsRotation(vehicle, newRotation)
+    outputChatBox("Wheel rotation: " .. newRotation)
+end
+
 function readPathFromFile(filePath, reverse, mirror, offset)
     local file = fileOpen(filePath)
     if not file then
@@ -844,6 +855,11 @@ addEventHandler("onClientPreRender", root, function()
             local x, y, z = getElementPosition(instance.vehicle)
             for j, data in ipairs(attachedTexts) do
                 dxDraw3DText(data.text, x + data.x, y + data.y, z + data.z, data.scale, data.font, data.color, data.maxDistance, data.colorCoded)
+            end
+            if not isElement(instance.ped) then
+                local direction = instance.reversePath and -1 or 1
+                local speed = 5
+                simulateWheelRotation(instance.vehicle, speed * direction)
             end
         end
     end
