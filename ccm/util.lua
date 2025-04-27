@@ -180,16 +180,22 @@ function readPathFromFile(filePath, reverse, mirror, offset)
                 if point.rz then
                     point.rz = (180 - point.rz) % 360
                 end
+                point.x = point.x + offset[1]
+                point.z = point.z + offset[3]
             elseif mirror == "y" then
                 point.x = -point.x + 2 * offsetX
                 if point.rz then
                     point.rz = (360 - point.rz) % 360
                 end
+                point.y = point.y + offset[2]
+                point.z = point.z + offset[3]
             elseif mirror == "z" then
                 point.z = -point.z + 2 * offsetZ
                 if point.rx then
                     point.rx = (360 - point.rx) % 360
                 end
+                point.x = point.x + offset[1]
+                point.y = point.y + offset[2]
             end
             
             -- Adjust control states if they exist (for steering)
