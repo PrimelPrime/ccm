@@ -129,7 +129,6 @@ function simulateWheelRotation(vehicle, direction, speed)
     local newRotation = currentRotation + rotationChange
 
     setVehicleWheelsRotation(vehicle, newRotation)
-    outputChatBox("Wheel rotation: " .. newRotation)
 end
 
 function readPathFromFile(filePath, reverse, mirror, offset)
