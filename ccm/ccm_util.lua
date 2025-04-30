@@ -62,3 +62,5 @@ addEventHandler("onClientPreRender", root, function()
         end
     end
 end)
+
+setAircraftMaxHeight(100000)
