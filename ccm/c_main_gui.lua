@@ -75,7 +75,6 @@ local additionalArguments = {
     {name = "endlessVehiclesGroup", toolTip = "The group of vehicles that should be spawned. default by default: Including most street racers, lowriders, muscle cars and other handpicked vehicles.\nNote: default is generally suited for path recordings that have been done with the Infernus.", type = "selectable", text = "Vehicles group"},
     {name = "endlessVehiclesDelay", toolTip = "The delay between each vehicle spawn in milliseconds. 1000 by default.\nNote: This can handle two integers in the following format \"1000, 2000\" and will spawn vehicles via the math.random method.\nMake sure that the first integer is always smaller than the second integer!", type = "float", text = "Spawn interval"},
     {name = "createVehicleGroup", toolTip = "Creates your own vehicle group that can be used for the endless vehicles.", type = "button", text = "Create Group"},
-    --{name = "deleteVehicleGroup", toolTip = "Deletes the selected vehicle group.", type = "button", text = "Delete Group"},
     {name = "mirrorLabel", type = "label", text = "Mirror Path"},
     {name = "mirrorPath", toolTip = "Mirrors the path on the given axis. Default is none.", type = "selectable", text = "Select Axis"},
     {name = "mirrorPathOffsetLabel", type = "label", text = "Mirror Path Offset"},
@@ -2285,14 +2284,9 @@ function createMainGuiMenu()
     DGS:dgsTooltipApplyTo(saveButtonTooltip, saveButton, "Saves the current memo content to the selected map. You need to select a map before you can save.\nNote: This will create everything necessary inside your map folder. One click and you are done!\nDisclaimer: this might take a lot longer on slower servers!")
 
     --create button for file_list.json
-    addButton = DGS:dgsCreateButton(declare.marginLeft, declare.marginTop * 3 + declare.height * 6 + declare.spacing * 3, ((declare.width * 1.25) - declare.spacing) / 2, declare.height, "Add path/s to memo", false, pathsMenu)
+    addButton = DGS:dgsCreateButton(declare.marginLeft, declare.marginTop * 3 + declare.height * 6 + declare.spacing * 3, declare.width * 1.25, declare.height, "Add path/s to memo", false, pathsMenu)
     local addButtonTooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
     DGS:dgsTooltipApplyTo(addButtonTooltip, addButton, "Adds the selected path to the memo. You can add multiple paths to the memo before you decide to save.\nNote: You need to select a marker and a path before you can add it to the memo.\nInfo: You can use one marker for multiple paths by selecting the marker that has already been added.")
-
-    --delete button for file_list.json
-    delButton = DGS:dgsCreateButton(declare.marginLeft + (declare.width * 1.25) / 2, declare.marginTop * 3 + declare.height * 6 + declare.spacing * 3, (declare.width * 1.25) / 2, declare.height, "Delete path", false, pathsMenu)
-    local delButtonTooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
-    DGS:dgsTooltipApplyTo(delButtonTooltip, delButton, "Deletes the selected path from the file list (ComboBox). You need to select a path before you can delete it.")
 
     --[[create resource button
     resourceButton = DGS:dgsCreateButton(declare.marginLeft + (declare.width * 1.25) / 2 + declare.spacing / 2, declare.marginTop * 3 + declare.height * 7 + declare.spacing * 4, (declare.width * 1.25) / 2 - declare.spacing / 2, declare.height, "Create a resource", false, pathsMenu)
@@ -2602,49 +2596,6 @@ function createMainGuiMenu()
             saveMemoScriptToFile()
         end
     end, false)
-
-    -- Delete button to removing files from the path comboBox
-    addEventHandler("onDgsMouseClick", delButton, function(key, state)
-        if key == "left" and state == "up" then
-            local selectedPath = DGS:dgsComboBoxGetSelectedItem(pathsComboBox)
-            if selectedPath == -1 then
-                outputChatBox("#D7DF01INFO#FFFFFF: Please select a path to delete.", 255, 255, 255, true)
-                return
-            end
-            local path = DGS:dgsComboBoxGetItemText(pathsComboBox, selectedPath)
-    
-            local confirmWindow = DGS:dgsCreateWindow(screenWidth / 2 - 150, screenHeight / 2 - 75, 300, 150, "Are you sure?", false)
-            DGS:dgsWindowSetSizable(confirmWindow, false)
-    
-            local confirmLabel = DGS:dgsCreateLabel(10, 40, 280, 30, "Do you really want to delete this path?", false, confirmWindow)
-            DGS:dgsLabelSetHorizontalAlign(confirmLabel, "center", false)
-    
-            local yesButton = DGS:dgsCreateButton(50, 90, 80, 30, "Yes", false, confirmWindow)
-            local noButton = DGS:dgsCreateButton(170, 90, 80, 30, "No", false, confirmWindow)
-    
-            addEventHandler("onDgsMouseClick", yesButton, function(button, state)
-                if button == "left" and state == "up" then
-                    DGS:dgsComboBoxClear(pathsComboBox)
-                    triggerServerEvent("onRequestFileListDelete", localPlayer, path)
-                    DGS:dgsComboBoxSetSelectedItem(pathsComboBox, -1)
-                    DGS:dgsCloseWindow(confirmWindow)
-                end
-            end, false)
-    
-            addEventHandler("onDgsMouseClick", noButton, function(button, state)
-                if button == "left" and state == "up" then
-                    DGS:dgsCloseWindow(confirmWindow)
-                end
-            end, false)
-        end
-    end, false)
-
-    addEvent("onFileListDeleteSuccess", true)
-    addEventHandler("onFileListDeleteSuccess", localPlayer, function(path)
-        outputChatBox("#D7DF01INFO#FFFFFF: Successfully deleted path: " .. path, 255, 255, 255, true)
-        DGS:dgsComboBoxClear(pathsComboBox)
-        triggerServerEvent("onRequestFileList", localPlayer)
-    end)
 
     -----------------------------------------
     --------- create resource menu ----------
