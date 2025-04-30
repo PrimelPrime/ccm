@@ -625,6 +625,55 @@ function addFileListEntry(path, arguments, objectPath, effectPath, vehiclePath, 
     return false
 end
 
+addEvent("onRequestFileListDelete", true)
+addEventHandler("onRequestFileListDelete", root, function(filePath)
+    local client = source
+    local fileListPath = "paths/file_list.json"
+    local file = fileOpen(fileListPath, true)
+    if not file then return end
+
+    local content = fileRead(file, fileGetSize(file))
+    fileClose(file)
+
+
+    local fileList = {}
+    if content and content ~= "" then
+        local success, data = pcall(fromJSON, content)
+        if success and type(data) == "table" then
+            fileList = data
+        end
+    end
+
+    for i, entry in ipairs(fileList) do
+        if entry.path == filePath then
+            fileDelete(entry.path)
+            if entry.objectPath and fileExists(entry.objectPath) then
+                fileDelete(entry.objectPath)
+            end
+            if entry.effectPath and fileExists(entry.effectPath) then
+                fileDelete(entry.effectPath)
+            end
+            if entry.vehiclePath and fileExists(entry.vehiclePath) then
+                fileDelete(entry.vehiclePath)
+            end
+            if entry.textPath and fileExists(entry.textPath) then
+                fileDelete(entry.textPath)
+            end
+            table.remove(fileList, i)
+            break
+        end
+    end
+
+    local file = fileCreate(fileListPath)
+    if file then
+        fileWrite(file, toJSON(fileList, true))
+        fileClose(file)
+        triggerClientEvent(client, "onFileListDeleteSuccess", client, filePath)
+    else
+        triggerClientEvent(client, "onFileListDeleteFailure", client, filePath)
+    end
+end)
+
 local markers = {}
 
 function updateMarkersList()
