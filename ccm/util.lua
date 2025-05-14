@@ -32,6 +32,15 @@ local table_remove = table.remove
 
 local attachedEffects = {}
 local attachedSearchlights = {}
+local attachedObjects = {}
+local attachedTexts = {}
+local searchlights = {}
+local activeInstances = {}
+local activeInstancesTracker = {}
+math.randomseed(getRealTime().timestamp + getTickCount())
+
+local globalInstance = nil
+local preRenderHandler = nil
 
 local function getPositionFromElementOffset(element,offX,offY,offZ)
     if not isElement(element) then return false end
@@ -79,23 +88,25 @@ local function attachSearchlight(searchlight, element, pos)
     return true
 end
 
-addEventHandler("onClientPreRender", root, function()
+local function renderAttachedEffects()
     for fx, info in pairs(attachedEffects) do
-        local x, y, z = getPositionFromElementOffset(info.element, info.pos.x, info.pos.y, info.pos.z)
-        if x and y and z then
-            setElementPosition(fx, x, y, z)
-        end
-        if info.rot then
-            local baseRx, baseRy, baseRz = getRotationMatrix(info.element)
-            if baseRx then
-                local finalRx = (baseRx + info.rot.x) % 360
-                local finalRy = (baseRy + info.rot.y) % 360
-                local finalRz = (baseRz + info.rot.z) % 360
-                setElementRotation(fx, finalRx, finalRy, finalRz)
+        if isElement(info.element) then
+            local x, y, z = getPositionFromElementOffset(info.element, info.pos.x, info.pos.y, info.pos.z)
+            if x and y and z then
+                setElementPosition(fx, x, y, z)
+            end
+            if info.rot then
+                local baseRx, baseRy, baseRz = getRotationMatrix(info.element)
+                if baseRx then
+                    local finalRx = (baseRx + info.rot.x) % 360
+                    local finalRy = (baseRy + info.rot.y) % 360
+                    local finalRz = (baseRz + info.rot.z) % 360
+                    setElementRotation(fx, finalRx, finalRy, finalRz)
+                end
             end
         end
     end
-end)
+end
 
 function dxDraw3DText(text, x, y, z, scale, font, color, maxDistance, colorCoded)
     if not (x and y and z) then
@@ -291,14 +302,6 @@ local effectNames = {
     "water_fnt_tme","water_fountain","wallbust","WS_factorysmoke"
 }
 
-local attachedObjects = {}
-local attachedTexts = {}
-local searchlights = {}
-local activeInstances = {}
-math.randomseed(getRealTime().timestamp + getTickCount())
-
-local globalInstance = nil
-
 function createOccupiedVehicleAndMoveOverPath(
     marker, 
     pedID, 
@@ -450,11 +453,35 @@ function createOccupiedVehicleAndMoveOverPath(
 
     --Function to start movement of vehicle along path every time the marker is hit
     --anything else is also handled inside here
+    local instanceTrackerID = tostring(getTickCount()) .. "_" .. tostring(math_random(10000))
+    if not activeInstancesTracker then activeInstancesTracker = {} end
+    activeInstancesTracker[instanceTrackerID] = {}
 
+    local elements = {}
     function destroyInstance(instance)
         if not instance then return end
 
-        local elements = {}
+        instance.isBeingDestroyed = true
+        instance.isMoving = false
+
+        for tableName, tableRef in pairs({searchlights = searchlights, attachedObjects = attachedObjects, attachedEffects = attachedEffects, activeInstances = activeInstances, attachedTexts = attachedTexts}) do
+            for i = #tableRef, 1, -1 do
+                if tableRef[i] == instance then
+                    table_remove(tableRef, i)
+                    break
+                end
+            end
+        end
+
+        if activeInstancesTracker[instanceTrackerID] then
+            for i = #activeInstancesTracker[instanceTrackerID], 1, -1 do
+                if activeInstancesTracker[instanceTrackerID][i] == instance then
+                    table_remove(activeInstancesTracker[instanceTrackerID], i)
+                    break
+                end
+            end
+        end
+
         if instance.ped and isElement(instance.ped) then
             table_insert(elements, instance.ped)
         end
@@ -480,18 +507,10 @@ function createOccupiedVehicleAndMoveOverPath(
         end
 
         for _, element in ipairs(elements) do
-            destroyElement(element)
-        end
-
-        for _, table in ipairs({searchlights, attachedObjects, attachedEffects, activeInstances, attachedTexts}) do
-            for i = #table, 1, -1 do
-                if table[i] == instance then
-                    table_remove(table, i)
-                    break
-                end
+            if isElement(element) then
+                destroyElement(element)
             end
         end
-        instance.isMoving = false
     end
     
     local function createElementInstance(path, endlessVehiclesGroup)
@@ -520,7 +539,7 @@ function createOccupiedVehicleAndMoveOverPath(
             setTimer(function()
                 setElementFrozen(instance.vehicle, true)
                 setElementFrozen(instance.ped, true)
-            end, 50, 1)
+            end, 100, 1)
         else
 
             if type(endlessVehiclesGroup) == "string" then
@@ -699,17 +718,24 @@ function createOccupiedVehicleAndMoveOverPath(
         end
 
         table_insert(activeInstances, instance)
+        table_insert(activeInstancesTracker[instanceTrackerID], instance)
         return instance
     end
 
     local function moveVehicleAlongPath(instance, path, index)
+        if instance.isBeingDestroyed then return end
         if not isElement(instance.vehicle) then return end
         
         if index > #path then
             if destroyVehicle then
+                instance.isBeingDestroyed = true
                 destroyInstance(instance)
                 if not endlessVehicles then
-                    setTimer(function() createElementInstance(path, endlessVehiclesGroup) end, 100, 1)
+                    setTimer(function() 
+                        if activeInstancesTracker[instanceTrackerID] then
+                            local newInstance = createElementInstance(path, endlessVehiclesGroup) 
+                        end
+                    end, 250, 1)
                 end
             else
                 if not endlessVehiclesPeds and endlessVehicles then
@@ -768,10 +794,12 @@ function createOccupiedVehicleAndMoveOverPath(
                     end
                 end
             end
-    
-            setTimer(function()
-                moveVehicleAlongPath(instance, path, index + 1)
-            end, 5, 1)
+            
+            if not instance.isBeingDestroyed and isElement(instance.vehicle) then
+                setTimer(function()
+                    moveVehicleAlongPath(instance, path, index + 1)
+                end, 5, 1)
+            end
         else
             instance.isMoving = false
         end
@@ -781,26 +809,28 @@ function createOccupiedVehicleAndMoveOverPath(
         createElementInstance(path, endlessVehiclesGroup)
     else
         local function spawnVehicle()
-            local newInstance = createElementInstance(path, endlessVehiclesGroup)
-            newInstance.isMoving = true
-            if isElement(newInstance.ped) then
-                if not reversePath then
-                    setPedControlState(newInstance.ped, "accelerate", true)
-                else
-                    setPedControlState(newInstance.ped, "brake_reverse", true)
+            if activeInstancesTracker[instanceTrackerID] then
+                local newInstance = createElementInstance(path, endlessVehiclesGroup)
+                newInstance.isMoving = true
+                if isElement(newInstance.ped) then
+                    if not reversePath then
+                        setPedControlState(newInstance.ped, "accelerate", true)
+                    else
+                        setPedControlState(newInstance.ped, "brake_reverse", true)
+                    end
                 end
+                moveVehicleAlongPath(newInstance, path, 1)
+                
+                local nextDelay
+                if type(endlessVehiclesDelay) == "table" and endlessVehiclesDelay[1] < endlessVehiclesDelay[2] then
+                    nextDelay = math_random(endlessVehiclesDelay[1], endlessVehiclesDelay[2])
+                elseif type(endlessVehiclesDelay) == "table" and endlessVehiclesDelay[1] > endlessVehiclesDelay[2] then
+                    nextDelay = 1000
+                else
+                    nextDelay = endlessVehiclesDelay
+                end
+                setTimer(spawnVehicle, nextDelay, 1)
             end
-            moveVehicleAlongPath(newInstance, path, 1)
-            
-            local nextDelay
-            if type(endlessVehiclesDelay) == "table" and endlessVehiclesDelay[1] < endlessVehiclesDelay[2] then
-                nextDelay = math_random(endlessVehiclesDelay[1], endlessVehiclesDelay[2])
-            elseif type(endlessVehiclesDelay) == "table" and endlessVehiclesDelay[1] > endlessVehiclesDelay[2] then
-                nextDelay = 1000
-            else
-                nextDelay = endlessVehiclesDelay
-            end
-            setTimer(spawnVehicle, nextDelay, 1)
         end
 
         local initialDelay = type(endlessVehiclesDelay) == "table" and endlessVehiclesDelay[1] or endlessVehiclesDelay
@@ -808,28 +838,37 @@ function createOccupiedVehicleAndMoveOverPath(
     end
 
     local function startOccupiedVehicleMovement(hitElement)
-        if hitElement == localPlayer and not autoSpawn then
+        if hitElement == localPlayer then
             local playerVehicle = getPedOccupiedVehicle(localPlayer)
             if playerVehicle then
-                for i, instance in ipairs(activeInstances) do
-                    if not instance.isMoving then
-                        instance.isMoving = true
-                        if not reversePath then
-                            setPedControlState(instance.ped, "accelerate", true)
-                        else
-                            setPedControlState(instance.ped, "brake_reverse", true)
+                if activeInstancesTracker[instanceTrackerID] then
+                    for i, instance in ipairs(activeInstancesTracker[instanceTrackerID]) do
+                        if not instance.isMoving and not instance.isBeingDestroyed then
+                            instance.isMoving = true
+                            if not reversePath then
+                                if isElement(instance.ped) then
+                                    setPedControlState(instance.ped, "accelerate", true)
+                                end
+                            else
+                                if isElement(instance.ped) then
+                                    setPedControlState(instance.ped, "brake_reverse", true)
+                                end
+                            end
+                            moveVehicleAlongPath(instance, path, 1)
+                            return
                         end
-                        moveVehicleAlongPath(instance, path, 2)
-                        return
                     end
                 end
             end
         end
     end
-    addEventHandler("onClientMarkerHit", marker, startOccupiedVehicleMovement)
+
+    if marker ~= nil then
+        addEventHandler("onClientMarkerHit", marker, startOccupiedVehicleMovement)
+    end
 end
 
-addEventHandler("onClientPreRender", root, function()
+function renderAttachedSearchlights()
     for i, info in pairs(attachedSearchlights) do
         local x, y, z = getPositionFromElementOffset(info.element, info.pos.x, info.pos.y, info.pos.z)
         if x and y and z then
@@ -846,9 +885,9 @@ addEventHandler("onClientPreRender", root, function()
             end
         end
     end
-end)
+end
 
-addEventHandler("onClientPreRender", root, function()
+function renderAttachedTexts()
     for i, instance in ipairs(activeInstances) do
         if isElement(instance.vehicle) then
             local x, y, z = getElementPosition(instance.vehicle)
@@ -858,20 +897,43 @@ addEventHandler("onClientPreRender", root, function()
             if not isElement(instance.ped) then
                 local direction = instance.reversePath and -1 or 1
                 local speed = 5
-                simulateWheelRotation(instance.vehicle, speed * direction)
+                simulateWheelRotation(instance.vehicle, direction, speed)
             end
         end
     end
-end)
+end
+
+local function startPreRenderHandler()
+    if not preRenderHandler then
+        preRenderHandler = function()
+            renderAttachedEffects()
+            renderAttachedSearchlights()
+            renderAttachedTexts()
+        end
+        addEventHandler("onClientPreRender", root, preRenderHandler)
+    end
+end
+addEventHandler("onClientResourceStart", resourceRoot, startPreRenderHandler)
 
 --Cleanup instances
 addEventHandler("onClientResourceStop", resourceRoot, function()
-    for i, instance in ipairs(activeInstances) do
-        destroyInstance(instance)
+    if activeInstancesTracker[instanceTrackerID] then
+        for i, instance in ipairs(activeInstancesTracker[instanceTrackerID]) do
+            destroyInstance(instance)
+        end
+        activeInstancesTracker[instanceTrackerID] = nil
+    end
+
+    if preRenderHandler then
+        removeEventHandler("onClientPreRender", root, preRenderHandler)
+        preRenderHandler = nil
     end
     
     attachedEffects = {}
+    attachedSearchlights = {}
+    attachedObjects = {}
+    attachedTexts = {}
     searchlights = {}
     activeInstances = {}
-    attachedTexts = {}
+    activeInstancesTracker = {}
 end)
