@@ -81,6 +81,7 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
 
         if line:find("createOccupiedVehicleAndMoveOverPath") then
             local filePath = line:match('createOccupiedVehicleAndMoveOverPath%([^,]+, [^,]+, [^,]+, "([^"]+)"')
+            --outputDebugString("[CCM]: Found file path: " .. filePath, 4, 100, 255, 100)
             if filePath then
                 table.insert(paths, filePath)
             end
@@ -202,13 +203,25 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
                             elseif src == scriptName then
                                 scriptExistsInMeta = true
                             end
+                        elseif nodeName == "min_mta_version" then
+                            local clientVer = xmlNodeGetAttribute(node, "client")
+                            local serverVer = xmlNodeGetAttribute(node, "server")
+                            if serverVer then
+                                xmlNodeSetAttribute(node, "client", "1.3.0-9.04482")
+                            else
+                                local newMinVersionNode = xmlCreateChild(xml, "min_mta_version")
+                                xmlNodeSetAttribute(newMinVersionNode, "server", "1.5.8-9.20957")
+                                xmlNodeSetAttribute(newMinVersionNode, "client", "1.3.0-9.04482")
+                            end
                         end
                     end
                 end
-        
-                if not fileExistsInMeta[filePath] then
-                    local newNode = xmlCreateChild(xml, "file")
-                    xmlNodeSetAttribute(newNode, "src", filePath)
+
+                for _, path in ipairs(paths) do
+                    if not fileExistsInMeta[path] then
+                        local newNode = xmlCreateChild(xml, "file")
+                        xmlNodeSetAttribute(newNode, "src", path)
+                    end
                 end
 
                 for _, objectDataPath in ipairs(objectDataPaths) do
@@ -278,6 +291,18 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
                 fileDelete(fullPath)
                 fileCopy(fileListPath, fullPath)
             end
+        end
+    end
+
+    for _, path in ipairs(paths) do
+        local fileListPath = ":" .. getResourceName(getThisResource()) .. "/" .. path
+        local fullPath = ":" .. mapName .. "/" .. path
+
+        if not fileExists(fullPath) then
+            fileCopy(fileListPath, fullPath)
+        else
+            fileDelete(fullPath)
+            fileCopy(fileListPath, fullPath)
         end
     end
 
