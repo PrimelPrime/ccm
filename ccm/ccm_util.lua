@@ -64,3 +64,80 @@ addEventHandler("onClientPreRender", root, function()
 end)
 
 setAircraftMaxHeight(100000)
+
+-- Magnet Wheels
+------------------
+-- BY KRZYSZTOF --
+------------------
+
+function magnetWheels()
+    progress = (getTickCount() - tick)/17
+    tick = getTickCount()
+
+    local vehicle = getPedOccupiedVehicle(localPlayer)
+
+    if vehicle then
+        local x,y,z = getElementPosition(vehicle)
+        local vx,vy,vz = getElementVelocity(vehicle)
+        local underx,undery,underz = getPositionFromElementOffset(vehicle,0,0,-1)
+        local rayx,rayy,rayz = getPositionFromElementOffset(vehicle,0,0,-3)
+        local hit = processLineOfSight ( x, y, z, rayx,rayy,rayz, true,false )
+
+    	setElementHealth(vehicle, 1000)
+    	setVehicleGravity(vehicle, 0, 0, 0)
+    	setElementVelocity(vehicle, (underx - x)*currentBinds.magnetPower*progress+vx, (undery - y)*currentBinds.magnetPower*progress+vy, (underz - z)*currentBinds.magnetPower*progress+vz)
+
+    	--prevent vehicle flying 
+    	if hit then
+    		fTick = getTickCount()
+    	elseif (getTickCount() - fTick) > currentBinds.magnetFlyTolerance*1000 then  
+    	    blowVehicle(vehicle)
+    	    stopMagnets()
+    	end
+    end
+end
+	
+function getPositionFromElementOffset(element,offX,offY,offZ)
+
+    local m = getElementMatrix(element)
+    local x = offX * m[1][1] + offY * m[2][1] + offZ * m[3][1] + m[4][1]
+    local y = offX * m[1][2] + offY * m[2][2] + offZ * m[3][2] + m[4][2]
+    local z = offX * m[1][3] + offY * m[2][3] + offZ * m[3][3] + m[4][3]
+    do
+    	return x,y,z
+    end
+end
+
+function onWasted()
+    local vehicle = getPedOccupiedVehicle(source)
+    if vehicle then
+        local gx,gy,gz = getVehicleGravity(vehicle)
+        if gx == 0 and gy == 0 and gz == -1 then return end
+        stopMagnets()
+    end
+end
+addEventHandler ( "onClientPlayerWasted", getLocalPlayer(), onWasted )
+
+function stopMagnets()
+    local vehicle = getPedOccupiedVehicle(localPlayer)
+    removeEventHandler("onClientRender", root, magnetWheels)
+    setVehicleGravity(vehicle, 0, 0, -1)
+    tick = nil
+end
+addEventHandler("onClientResourceStop", resourceRoot, stopMagnets)
+
+function switchMagnetWheels(key, state)
+    local vehicle = getPedOccupiedVehicle(localPlayer)
+    if vehicle then
+        if key == currentBinds.magnetWheels and state then
+            if not tick then
+                tick = getTickCount()
+                fTick = getTickCount()
+                addEventHandler("onClientRender", root, magnetWheels)
+            else
+                stopMagnets()
+            end
+        end
+    end
+end
+addEventHandler("onClientKey", root, switchMagnetWheels)

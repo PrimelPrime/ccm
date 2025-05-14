@@ -90,7 +90,10 @@ currentBinds = {
     cameraUp = "s", 
     cameraDown = "w",
     cameraZoomIn = "r",
-    cameraZoomOut = "f"
+    cameraZoomOut = "f",
+    magnetWheels = "lshift",
+    magnetPower = 0.008,
+    magnetFlyTolerance = 5,
 }
 editFields = {}
 switchButtons = {}
@@ -467,7 +470,7 @@ function createMainGuiMenu()
     local importButton = DGS:dgsCreateButton(declare.marginLeft, declare.sHeight - declare.height - declare.marginBottom * 2.5, declare.width, declare.height, "Import", false, mainRecordMenu)
     --Settings
     local settingsButton = DGS:dgsCreateButton(declare.marginLeft, declare.sHeight - declare.height - declare.marginBottom * 1.5 + declare.spacing, declare.width, declare.height, "Settings", false, mainRecordMenu)
-    settingsMenu = DGS:dgsCreateWindow(declare.sPosX - declare.sWidth * 1.5, declare.sPosY - (declare.sHeight / 2), declare.sWidth, declare.sHeight * 0.355, "CCM - Settings", false, 0xFFFFFFFF, 25, nil, 0xC8141414, nil, 0x96141414, 5, true)
+    settingsMenu = DGS:dgsCreateWindow(declare.sPosX - declare.sWidth * 1.5, declare.sPosY - (declare.sHeight / 2), declare.sWidth, declare.sHeight * 0.445, "CCM - Settings", false, 0xFFFFFFFF, 25, nil, 0xC8141414, nil, 0x96141414, 5, true)
     DGS:dgsWindowSetSizable(settingsMenu, false)
     DGS:dgsSetVisible(settingsMenu, false)
     --keybinds
@@ -481,7 +484,8 @@ function createMainGuiMenu()
             {name = "cameraUp", key = "s"},
             {name = "cameraDown", key = "w"},
             {name = "cameraZoomIn", key = "r"},
-            {name = "cameraZoomOut", key = "f"}
+            {name = "cameraZoomOut", key = "f"},
+            {name = "magnetWheels", key = "lshift"},
         }
         local friendlyKeyNames = {
             {name = "Record"},
@@ -490,7 +494,8 @@ function createMainGuiMenu()
             {name = "Up"},
             {name = "Down"},
             {name = "Zoom in"},
-            {name = "Zoom out"}
+            {name = "Zoom out"},
+            {name = "Magnet Wheels"},
         }
         
         for i = 1, #defaultKeys do
@@ -508,6 +513,18 @@ function createMainGuiMenu()
             DGS:dgsMemoSetReadOnly(keybind, true)
             table.insert(keybinds, {element = keybind, name = defaultKeys[i].name})
         end
+
+        local magnetPowerLabel = DGS:dgsCreateLabel(declare.marginLeft, declare.marginTop * (2 * 10) - declare.spacing * 2, declare.width / 2, declare.height, "Power", false, settingsMenu)
+        local magnetPowerInput = DGS:dgsCreateEdit(declare.marginLeft + declare.width / 2, declare.marginTop * (2 * 9.5), declare.width / 2, declare.height * 0.8, tostring(currentBinds.magnetPower or 0.008), false, settingsMenu)
+        local tooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
+        DGS:dgsTooltipApplyTo(tooltip, magnetPowerInput, "Power of the magnet wheels.\nNote: The default value is 0.008.\nBigger value makes the magnet stronger, traction is much better, it's harder to leave an element and pull away from the ground.\nIf the value is too big vehicle's wheels might be smashed and contact with the objects causes many sparks.")
+        table.insert(keybinds, {element = magnetPowerInput, name = "magnetPower"})
+
+        local magnetFlyToleranceLabel = DGS:dgsCreateLabel(declare.marginLeft, declare.marginTop * (2 * 11) - declare.spacing * 2, declare.width / 2, declare.height, "Fly Tolerance", false, settingsMenu)
+        local magnetFlyToleranceInput = DGS:dgsCreateEdit(declare.marginLeft + declare.width / 2, declare.marginTop * (2 * 10.5), declare.width / 2, declare.height * 0.8, tostring(currentBinds.magnetFlyTolerance or 5), false, settingsMenu)
+        local mftooltip = DGS:dgsCreateToolTip(0xFFFFFFFF, 0xFF000000)
+        DGS:dgsTooltipApplyTo(mftooltip, magnetFlyToleranceInput, "Max time a vehicle can fly without touching a ground.\nNote: The default value is 5.")
+        table.insert(keybinds, {element = magnetFlyToleranceInput, name = "magnetFlyTolerance"})
     end
 
     createKeybinds()
@@ -672,18 +689,18 @@ function createMainGuiMenu()
         local bindFile = fileOpen("bind.json")
         local bindData = fromJSON(fileRead(bindFile, fileGetSize(bindFile)))
         fileClose(bindFile)
-        
+
         -- Update the currentBinds with values from the JSON file
         for key, value in pairs(currentBinds) do
             if bindData[key] ~= nil then
                 currentBinds[key] = bindData[key]
             end
         end
-        
+
         -- Update UI elements
         for i, keybind in ipairs(keybinds) do
             if bindData[keybind.name] then
-                DGS:dgsSetText(keybind.element, bindData[keybind.name])
+                DGS:dgsSetText(keybind.element, tostring(bindData[keybind.name]))
             end
         end
     end
@@ -691,23 +708,27 @@ function createMainGuiMenu()
     
     local function setKey(keybind, button, press)
         if button ~= "mouse1" and press then
-            DGS:dgsSetText(keybind.element, button)
-            removeEventHandler("onClientKey", root, keybind.handler)
-            
+            if keybind.name == "magnetPower" or keybind.name == "magnetFlyTolerance" then
+                local value = tonumber(DGS:dgsGetText(keybind.element))
+                if value then
+                    currentBinds[keybind.name] = value
+                end
+            else
+                DGS:dgsSetText(keybind.element, button)
+                currentBinds[keybind.name] = button
+            end
+
             -- Update the bind.json file
             local bindFile = fileOpen("bind.json")
             local bindData = fromJSON(fileRead(bindFile, fileGetSize(bindFile)))
-            bindData[keybind.name] = button
+            bindData[keybind.name] = currentBinds[keybind.name]
             fileClose(bindFile)
-            
+
             -- Reopen for writing
             local bindFile = fileCreate("bind.json", true)
             fileWrite(bindFile, toJSON(bindData))
             fileClose(bindFile)
-            
-            -- Update the current binds in memory
-            currentBinds[keybind.name] = button
-            
+
             isRecordingKey = false
         end
     end
@@ -721,7 +742,9 @@ function createMainGuiMenu()
             if button == "left" and state == "up" then
                 if not isRecordingKey then
                     isRecordingKey = true
-                    DGS:dgsSetText(keybind.element, "Press any key...")
+                    if not (keybind.name == "magnetPower" or keybind.name == "magnetFlyTolerance") then
+                        DGS:dgsSetText(keybind.element, "Press any key...")
+                    end
     
                     removeEventHandler("onClientKey", root, keybind.handler)
                     addEventHandler("onClientKey", root, keybind.handler)
