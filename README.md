@@ -44,6 +44,15 @@ An easy tool to add NPC-like moving vehicles to your maps without having to writ
 
 > Enjoy!
 
+## Version 2.3.0
+Add magnet wheels functionality -- Shoutout to Krzysztof for letting me use the script.  
+Refactor rendering functions and instance management: Improve performance and organization of attached elements.  
+Fix path handling in onImportPaths: Update min_mta_version, and streamline file operations.  
+
+## Version 2.2.0
+Added setAircraftMaxHeight()  
+Added additional functionality to now be able to delete paths and all of its correlated files.  
+
 ## Version 2.1.0
 Added the ability to mirror path recordings as well as being able to add offsets - see addition options panel.  
 Added a switchbutton to turn of peds when using endless vehicles if there are problems with performance.  
