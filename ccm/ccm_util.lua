@@ -126,6 +126,8 @@ end
 addEventHandler("onClientResourceStop", resourceRoot, stopMagnets)
 
 function switchMagnetWheels(key, state)
+    if isMTAWindowActive() or DGS:dgsGetInputMode() == "no_binds" or isInGuiEditField then return end
+
     local vehicle = getPedOccupiedVehicle(localPlayer)
     if vehicle then
         if key == currentBinds.magnetWheels and state then
@@ -133,8 +135,10 @@ function switchMagnetWheels(key, state)
                 tick = getTickCount()
                 fTick = getTickCount()
                 addEventHandler("onClientRender", root, magnetWheels)
+                outputChatBox("#D7DF01INFO#FFFFFF: Magnet Wheels activated.", 255, 255, 255, true)
             else
                 stopMagnets()
+                outputChatBox("#D7DF01INFO#FFFFFF: Magnet Wheels deactivated.", 255, 255, 255, true)
             end
         end
     end
