@@ -44,6 +44,11 @@ An easy tool to add NPC-like moving vehicles to your maps without having to writ
 
 > Enjoy!
 
+## Version 2.3.1
+Simplify TrackerID for each instance.  
+Fix path mirroring -> You can now adjust the angle of each axis.  
+Fix searchlight preview.  
+
 ## Version 2.3.0
 Add magnet wheels functionality -- Shoutout to Krzysztof for letting me use the script.  
 Refactor rendering functions and instance management: Improve performance and organization of attached elements.  
