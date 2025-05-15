@@ -423,6 +423,10 @@ function createOccupiedVehicleAndMoveOverPath(
                     wheelSizeValue = data.wheelSize.size or 1
                 end
             end
+
+            if data.vehicleSmokeTrail then
+                vehicleSmokeTrail = data.vehicleSmokeTrail or false
+            end
     
             -- Vehicle Alpha
             vehicleAlpha = data.vehicleAlpha or 255
@@ -528,6 +532,10 @@ function createOccupiedVehicleAndMoveOverPath(
                 setVehicleWheelStates(instance.vehicle, frontLeft, rearLeft, frontRight, rearRight)
             end
 
+            if vehicleSmokeTrail then
+                setVehicleSmokeTrailEnabled(instance.vehicle, true)
+            end
+
             if vehicleAlpha then
                 setElementAlpha(instance.vehicle, vehicleAlpha)
                 setElementAlpha(instance.ped, vehicleAlpha)
@@ -564,6 +572,10 @@ function createOccupiedVehicleAndMoveOverPath(
                 setVehicleWheelStates(instance.vehicle, wheelStates)
             elseif frontLeft and rearLeft and frontRight and rearRight then
                 setVehicleWheelStates(instance.vehicle, frontLeft, rearLeft, frontRight, rearRight)
+            end
+
+            if vehicleSmokeTrail then
+                setVehicleSmokeTrailEnabled(instance.vehicle, true)
             end
 
             if vehicleAlpha then
