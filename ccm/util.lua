@@ -29,9 +29,12 @@ local ipairs = ipairs
 local math_random = math.random
 local table_insert = table.insert
 local table_remove = table.remove
+local rad = math.rad
+local sin = math.sin
+local cos = math.cos
 
+attachedSearchlights = {}
 local attachedEffects = {}
-local attachedSearchlights = {}
 local attachedObjects = {}
 local attachedTexts = {}
 local searchlights = {}
@@ -41,6 +44,58 @@ math.randomseed(getRealTime().timestamp + getTickCount())
 
 local globalInstance = nil
 local preRenderHandler = nil
+
+local vehicleIds = {400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415,
+416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433,
+434, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451,
+452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469,
+470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487,
+488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505,
+506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523,
+524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541,
+542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559,
+560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577,
+578, 579, 580, 581, 582, 583, 584, 585, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595,
+596, 597, 598, 599, 600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611
+}
+
+local pedIds = {1, 2, 5, 7, 8, 14, 15, 17, 20, 21, 22, 23, 24, 25, 26, 28, 29,
+30, 32, 33, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 57,
+58, 59, 60, 66, 67, 68, 71, 72, 73, 94, 95, 96, 98, 123, 124,
+125, 126, 128, 132, 133, 136, 142, 143, 144, 146, 147, 153, 156,
+158, 161, 170, 171, 179, 180, 181, 182, 183, 184, 185, 186, 187,
+189, 202, 206, 217, 220, 221, 222, 223, 227, 228, 229, 234, 235,
+236, 240, 241, 242, 247, 248, 250, 258, 259, 261, 262, 264, 268,
+272, 273, 290, 291, 292, 293, 294, 295, 296, 297, 299, 6, 9, 10, 
+11, 12, 13, 31, 38, 39, 40, 41, 53, 54, 55, 56, 75,
+76, 77, 88, 89, 91, 90, 92, 93, 85, 129, 130, 131, 138, 139, 140,
+141, 145, 148, 150, 151, 152, 157, 169, 172, 178, 190, 191, 192,
+193, 194, 195, 196, 197, 198, 199, 201, 207, 211, 214, 215, 216,
+218, 219, 226, 231, 232, 233, 237, 238, 243, 298, 304 }
+
+local vehicleGroups = {
+    aircraft = {592, 577, 520, 553, 476, 519},
+    emergency = {416, 427, 490, 528, 407, 544, 523, 596, 598, 599, 597},
+    streetRacers = {429, 541, 415, 480, 562, 565, 434, 411, 559, 561, 560, 506, 451, 558, 555, 477},
+    lowridersAndMuscleCars = {536, 575, 534, 567, 535, 576, 412, 402, 542, 603, 475},
+    bikes = {581, 521, 463, 522, 461, 448, 468, 586},
+    bicycles = {509, 481, 510},
+    default = {429, 541, 415, 480, 562, 565, 434, 411, 559, 561, 560, 506, 451, 558, 555, 477, 536, 575, 534, 567, 535, 576, 412, 402, 603, 475, 496, 533, 545, 517, 580, 467, 507, 445},
+    helicopters = {548, 425, 417, 487, 488, 497, 563, 447, 469},
+}
+
+local effectNames = {
+    "blood_heli","boat_prop","camflash","carwashspray","cement","cloudfast","coke_puff","coke_trail","cigarette_smoke",
+    "explosion_barrel","explosion_crate","explosion_door","exhale","explosion_fuel_car","explosion_large","explosion_medium",
+    "explosion_molotov","explosion_small","explosion_tiny","extinguisher","flame","fire","fire_med","fire_large","flamethrower",
+    "fire_bike","fire_car","gunflash","gunsmoke","insects","heli_dust","jetpack","jetthrust","nitro","molotov_flame",
+    "overheat_car","overheat_car_electric","prt_blood","prt_boatsplash","prt_bubble","prt_cardebris","prt_collisionsmoke",
+    "prt_glass","prt_gunshell","prt_sand","prt_sand2","prt_smokeII_3_expand","prt_smoke_huge","prt_spark","prt_spark_2",
+    "prt_splash","prt_wake","prt_watersplash","prt_wheeldirt","petrolcan","puke","riot_smoke","spraycan","smoke30lit","smoke30m",
+    "smoke50lit","shootlight","smoke_flare","tank_fire","teargas","teargasAD","tree_hit_fir","tree_hit_palm","vent","vent2",
+    "water_hydrant","water_ripples","water_speed","water_splash","water_splash_big","water_splsh_sml","water_swim","waterfall_end",
+    "water_fnt_tme","water_fountain","wallbust","WS_factorysmoke"
+}
 
 local function getPositionFromElementOffset(element,offX,offY,offZ)
     if not isElement(element) then return false end
@@ -108,6 +163,14 @@ local function renderAttachedEffects()
     end
 end
 
+local function processTable(input, defaultVector)
+    if type(table) == "table" then
+        return Vector3(input[1] or 0, input[2] or 0, input[3] or 0)
+    else
+        return defaultVector or Vector3(0, 0, 0)
+    end
+end
+
 function dxDraw3DText(text, x, y, z, scale, font, color, maxDistance, colorCoded)
     if not (x and y and z) then
         outputDebugString("dxDraw3DText: One of the world coordinates is missing", 1);
@@ -142,7 +205,7 @@ function simulateWheelRotation(vehicle, direction, speed)
     setVehicleWheelsRotation(vehicle, newRotation)
 end
 
-function readPathFromFile(filePath, reverse, mirror, offset)
+function readPathFromFile(filePath, reverse, mirror, offset, rotation)
     local file = fileOpen(filePath)
     if not file then
         outputDebugString("Failed to open file: " .. filePath)
@@ -191,34 +254,54 @@ function readPathFromFile(filePath, reverse, mirror, offset)
     
     -- Mirror the path if a mirror axis is specified
     if mirror then
-        local offsetX = offset and newPath[1].x + offset[1] or 0
-        local offsetY = offset and newPath[1].y + offset[2] or 0
-        local offsetZ = offset and newPath[1].z + offset[3] or 0
+        local pOffset = Vector3(newPath[1].x + offset.x, newPath[1].y + offset.y, newPath[1].z + offset.z)
+        local rot = Vector3(rotation.x, rotation.y, rotation.z)
+        local pivot = Vector3(newPath[1].x, newPath[1].y, newPath[1].z)
+        local rad = Vector3(rad(rot.x), rad(rot.y), rad(rot.z))
         
         for i, point in ipairs(newPath) do
             if mirror == "x" then
-                point.y = -point.y + 2 * offsetY
-                if point.rz then
-                    point.rz = (180 - point.rz) % 360
-                end
-                point.x = point.x + offset[1]
-                point.z = point.z + offset[3]
+                point.y = -point.y + 2 * pOffset.y
+                point.x = point.x + offset.x
+                point.z = point.z + offset.z
+                if point.rz then point.rz = (180 - point.rz) % 360 end
+                if point.rx then point.rx = (360 - point.rx) % 360 end
             elseif mirror == "y" then
-                point.x = -point.x + 2 * offsetX
-                if point.rz then
-                    point.rz = (360 - point.rz) % 360
-                end
-                point.y = point.y + offset[2]
-                point.z = point.z + offset[3]
+                point.x = -point.x + 2 * pOffset.x
+                point.y = point.y + offset.y
+                point.z = point.z + offset.z
+                if point.rz then point.rz = (360 - point.rz) % 360 end
+                if point.ry then point.ry = (360 - point.ry) % 360 end
             elseif mirror == "z" then
-                point.z = -point.z + 2 * offsetZ
-                if point.rx then
-                    point.rx = (360 - point.rx) % 360
-                end
-                point.x = point.x + offset[1]
-                point.y = point.y + offset[2]
+                point.z = -point.z + 2 * pOffset.z
+                point.x = point.x + offset.x
+                point.y = point.y + offset.y
+                if point.rx then point.rx = (360 - point.rx) % 360 end
+                if point.ry then point.ry = (180 - point.ry) % 360 end
             end
-            
+
+            if rotation then
+                local x = point.x - pivot.x
+                local y = point.y - pivot.y
+                local z = point.z - pivot.z
+
+                if rot.x ~= 0 then
+                    x, y, z = x, y * cos(rad.x) - z * sin(rad.x), y * sin(rad.x) + z * cos(rad.x)
+                elseif rot.y ~= 0 then
+                    x, y, z = x * cos(rad.y) + z * sin(rad.y), y, -x * sin(rad.y) + z * cos(rad.y)
+                elseif rot.z ~= 0 then
+                    x, y, z = x * cos(rad.z) - y * sin(rad.z), x * sin(rad.z) + y * cos(rad.z), z
+                end
+
+                point.x = x + pivot.x
+                point.y = y + pivot.y
+                point.z = z + pivot.z
+
+                if point.rx then point.rx = (point.rx + rot.x) % 360 end
+                if point.ry then point.ry = (point.ry + rot.y) % 360 end
+                if point.rz then point.rz = (point.rz + rot.z) % 360 end
+            end
+
             -- Adjust control states if they exist (for steering)
             if point.cl and point.cr then
                 local temp = point.cl
@@ -250,58 +333,6 @@ function readDataFromFile(filePath)
     return data
 end
 
-local vehicleIds = {400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410, 411, 412, 413, 414, 415,
-416, 417, 418, 419, 420, 421, 422, 423, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433,
-434, 435, 436, 437, 438, 439, 440, 441, 442, 443, 444, 445, 446, 447, 448, 449, 450, 451,
-452, 453, 454, 455, 456, 457, 458, 459, 460, 461, 462, 463, 464, 465, 466, 467, 468, 469,
-470, 471, 472, 473, 474, 475, 476, 477, 478, 479, 480, 481, 482, 483, 484, 485, 486, 487,
-488, 489, 490, 491, 492, 493, 494, 495, 496, 497, 498, 499, 500, 501, 502, 503, 504, 505,
-506, 507, 508, 509, 510, 511, 512, 513, 514, 515, 516, 517, 518, 519, 520, 521, 522, 523,
-524, 525, 526, 527, 528, 529, 530, 531, 532, 533, 534, 535, 536, 537, 538, 539, 540, 541,
-542, 543, 544, 545, 546, 547, 548, 549, 550, 551, 552, 553, 554, 555, 556, 557, 558, 559,
-560, 561, 562, 563, 564, 565, 566, 567, 568, 569, 570, 571, 572, 573, 574, 575, 576, 577,
-578, 579, 580, 581, 582, 583, 584, 585, 586, 587, 588, 589, 590, 591, 592, 593, 594, 595,
-596, 597, 598, 599, 600, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610, 611
-}
-
-local pedIds = {1, 2, 5, 7, 8, 14, 15, 17, 20, 21, 22, 23, 24, 25, 26, 28, 29,
-30, 32, 33, 34, 35, 36, 37, 42, 43, 44, 45, 46, 47, 48, 49, 57,
-58, 59, 60, 66, 67, 68, 71, 72, 73, 94, 95, 96, 98, 123, 124,
-125, 126, 128, 132, 133, 136, 142, 143, 144, 146, 147, 153, 156,
-158, 161, 170, 171, 179, 180, 181, 182, 183, 184, 185, 186, 187,
-189, 202, 206, 217, 220, 221, 222, 223, 227, 228, 229, 234, 235,
-236, 240, 241, 242, 247, 248, 250, 258, 259, 261, 262, 264, 268,
-272, 273, 290, 291, 292, 293, 294, 295, 296, 297, 299, 6, 9, 10, 
-11, 12, 13, 31, 38, 39, 40, 41, 53, 54, 55, 56, 75,
-76, 77, 88, 89, 91, 90, 92, 93, 85, 129, 130, 131, 138, 139, 140,
-141, 145, 148, 150, 151, 152, 157, 169, 172, 178, 190, 191, 192,
-193, 194, 195, 196, 197, 198, 199, 201, 207, 211, 214, 215, 216,
-218, 219, 226, 231, 232, 233, 237, 238, 243, 298, 304 }
-
-local vehicleGroups = {
-    aircraft = {592, 577, 520, 553, 476, 519},
-    emergency = {416, 427, 490, 528, 407, 544, 523, 596, 598, 599, 597},
-    streetRacers = {429, 541, 415, 480, 562, 565, 434, 411, 559, 561, 560, 506, 451, 558, 555, 477},
-    lowridersAndMuscleCars = {536, 575, 534, 567, 535, 576, 412, 402, 542, 603, 475},
-    bikes = {581, 521, 463, 522, 461, 448, 468, 586},
-    bicycles = {509, 481, 510},
-    default = {429, 541, 415, 480, 562, 565, 434, 411, 559, 561, 560, 506, 451, 558, 555, 477, 536, 575, 534, 567, 535, 576, 412, 402, 603, 475, 496, 533, 545, 517, 580, 467, 507, 445},
-    helicopters = {548, 425, 417, 487, 488, 497, 563, 447, 469},
-}
-
-local effectNames = {
-    "blood_heli","boat_prop","camflash","carwashspray","cement","cloudfast","coke_puff","coke_trail","cigarette_smoke",
-    "explosion_barrel","explosion_crate","explosion_door","exhale","explosion_fuel_car","explosion_large","explosion_medium",
-    "explosion_molotov","explosion_small","explosion_tiny","extinguisher","flame","fire","fire_med","fire_large","flamethrower",
-    "fire_bike","fire_car","gunflash","gunsmoke","insects","heli_dust","jetpack","jetthrust","nitro","molotov_flame",
-    "overheat_car","overheat_car_electric","prt_blood","prt_boatsplash","prt_bubble","prt_cardebris","prt_collisionsmoke",
-    "prt_glass","prt_gunshell","prt_sand","prt_sand2","prt_smokeII_3_expand","prt_smoke_huge","prt_spark","prt_spark_2",
-    "prt_splash","prt_wake","prt_watersplash","prt_wheeldirt","petrolcan","puke","riot_smoke","spraycan","smoke30lit","smoke30m",
-    "smoke50lit","shootlight","smoke_flare","tank_fire","teargas","teargasAD","tree_hit_fir","tree_hit_palm","vent","vent2",
-    "water_hydrant","water_ripples","water_speed","water_splash","water_splash_big","water_splsh_sml","water_swim","waterfall_end",
-    "water_fnt_tme","water_fountain","wallbust","WS_factorysmoke"
-}
-
 function createOccupiedVehicleAndMoveOverPath(
     marker, 
     pedID, 
@@ -328,7 +359,8 @@ function createOccupiedVehicleAndMoveOverPath(
     textDataPath,
     mirrorPath,
     mirrorOffset,
-    endlessVehiclesPeds
+    endlessVehiclesPeds,
+    mirrorRotation
 )
 
     --Set default values for optional arguments if not provided
@@ -348,9 +380,6 @@ function createOccupiedVehicleAndMoveOverPath(
     endlessVehicles = endlessVehicles or false
     endlessVehiclesGroup = endlessVehiclesGroup or vehicleGroups.default
     endlessVehiclesDelay = endlessVehiclesDelay or 1000
-    attachToVehicle = attachToVehicle or nil
-    attachToVehiclePosOffset = attachToVehiclePosOffset or {0, 0, 0}
-    attachToVehicleRotOffset = attachToVehicleRotOffset or {0, 0, 0}
     objectDataPath = objectDataPath or nil
     effectDataPath = effectDataPath or nil
     vehicleDataPath = vehicleDataPath or nil
@@ -358,6 +387,7 @@ function createOccupiedVehicleAndMoveOverPath(
     mirrorPath = mirrorPath or nil
     mirrorOffset = mirrorOffset or {0, 0, 0}
     endlessVehiclesPeds = endlessVehiclesPeds or false
+    mirrorRotation = mirrorRotation or {0, 0, 0}
 
     if objectDataPath ~= nil then
         objectData = readDataFromFile(objectDataPath)
@@ -403,17 +433,11 @@ function createOccupiedVehicleAndMoveOverPath(
         textData = readDataFromFile(textDataPath)
     end
 
-    if type(mirrorOffset) == "table" then
-        mirrorOffsetX = mirrorOffset[1] or 0
-        mirrorOffsetY = mirrorOffset[2] or 0
-        mirrorOffsetZ = mirrorOffset[3] or 0
-    else
-        mirrorOffsetX, mirrorOffsetY, mirrorOffsetZ = 0, 0, 0
-    end
+    if mirrorOffset then mirrorOffset = processTable(mirrorOffset, Vector3(0, 0, 0)) end
+    if mirrorRotation then mirrorRotation = processTable(mirrorRotation, Vector3(0, 0, 0)) end
+    if searchlightOffset then searchlightOffset = processTable(searchlightOffset, Vector3(0, 0, 0)) end
 
-    mirrorOffset = {mirrorOffsetX, mirrorOffsetY, mirrorOffsetZ}
-
-    local path = readPathFromFile(filePath, reversePath, mirrorPath, mirrorOffset)
+    local path = readPathFromFile(filePath, reversePath, mirrorPath, mirrorOffset, mirrorRotation)
     if not path then
         outputDebugString("Failed to read path from file: " .. filePath)
         return
@@ -424,36 +448,9 @@ function createOccupiedVehicleAndMoveOverPath(
         return
     end
 
-    local offsetX, offsetY, offsetZ
-    if type(searchlightOffset) == "table" then
-        offsetX = searchlightOffset[1] or 0
-        offsetY = searchlightOffset[2] or 0
-        offsetZ = searchlightOffset[3] or 0
-    elseif type(searchlightOffset) == "number" then
-        offsetX, offsetY, offsetZ = 0, 0, searchlightOffset
-    else
-        error("Invalid offset format. Must be table {x, y, z} or single number.")
-    end
-
-    if type(attachToVehiclePosOffset) == "table" then
-        posX = attachToVehiclePosOffset[1] or 0
-        posY = attachToVehiclePosOffset[2] or 0
-        posZ = attachToVehiclePosOffset[3] or 0
-    else
-        posX, posY, posZ = 0, 0, 0
-    end
-    
-    if type(attachToVehicleRotOffset) == "table" then
-        rotX = attachToVehicleRotOffset[1] or 0
-        rotY = attachToVehicleRotOffset[2] or 0
-        rotZ = attachToVehicleRotOffset[3] or 0
-    else
-        rotX, rotY, rotZ = 0, 0, 0
-    end
-
     --Function to start movement of vehicle along path every time the marker is hit
     --anything else is also handled inside here
-    local instanceTrackerID = tostring(getTickCount()) .. "_" .. tostring(math_random(10000))
+    local instanceTrackerID = tostring(getTickCount())
     if not activeInstancesTracker then activeInstancesTracker = {} end
     activeInstancesTracker[instanceTrackerID] = {}
 
@@ -579,9 +576,9 @@ function createOccupiedVehicleAndMoveOverPath(
 
         --Create searchlight for vehicle
         if searchlightFollowsPlayer then
-            instance.searchlight = createSearchLight(path[1].x + offsetX, path[1].y + offsetY, path[1].z + offsetZ, 0, 0, 0, 0, 15, true)
+            instance.searchlight = createSearchLight(path[1].x + searchlightOffset.x, path[1].y + searchlightOffset.y, path[1].z + searchlightOffset.z, 0, 0, 0, 0, 15, true)
             instance.followsPlayer = searchlightFollowsPlayer
-            attachSearchlight(instance.searchlight, instance.vehicle, {x = offsetX, y = offsetY, z = offsetZ})
+            attachSearchlight(instance.searchlight, instance.vehicle, {x = searchlightOffset.x, y = searchlightOffset.y, z = searchlightOffset.z})
             table_insert(searchlights, instance)
         end
         
