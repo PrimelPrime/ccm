@@ -1,4 +1,3 @@
-
 function getPositionFromElementOffset(element,offX,offY,offZ)
     if not isElement(element) then return false end
     local m = getElementMatrix(element)  -- Get the matrix

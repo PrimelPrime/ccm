@@ -78,8 +78,8 @@ local additionalArguments = {
     --{name = "deleteVehicleGroup", toolTip = "Deletes the selected vehicle group.", type = "button", text = "Delete Group"},
     {name = "mirrorLabel", type = "label", text = "Mirror Path"},
     {name = "mirrorPath", toolTip = "Mirrors the path on the given axis. Default is none.", type = "selectable", text = "Select Axis"},
-    {name = "mirrorPathOffsetLabel", type = "label", text = "Mirror Path Offset"},
-    {name = "mirrorPathOffset", toolTip = "The offset for the mirrored path. {0, 0, 0} by default.\nNote: Use the same format as in the edit box to set the offset. E.g. 0, 0, 0 would be x = 0, y = 0, z = 0.", type = "float", text = "0, 0, 0"},
+    {name = "mirrorPathOffset", toolTip = "The offset for the mirrored path. {0, 0, 0} by default.\nNote: Use the same format as in the edit box to set the offset (excluding Off:). E.g. 0, 0, 0 would be x = 0, y = 0, z = 0.", type = "float", text = "Off: 0, 0, 0"},
+    {name = "mirrorPathRotation", toolTip = "The rotation for the mirrored path. {0, 0, 0} by default.\nNote: Use the same format as in the edit box to set the rotation (excluding Rot:). E.g. 0, 0, 0 would be rx = 0, ry = 0, rz = 0.", type = "float", text = "Rot: 0, 0, 0"},
 }
 
 local keybinds = {}
@@ -2556,6 +2556,17 @@ function createMainGuiMenu()
 
                 local endlessVehiclesPeds = DGS:dgsSwitchButtonGetState(switchButtons[12])
 
+                local mirrorRotationText = DGS:dgsGetText(editFields[46])
+                if mirrorRotationText:find(",") then
+                    local rotationValues = split(mirrorRotationText, ",")
+                    local rx = tonumber(rotationValues[1]) or 0
+                    local ry = tonumber(rotationValues[2]) or 0
+                    local rz = tonumber(rotationValues[3]) or 0
+                    mirrorRotation = string.format("{%d, %d, %d}", rx, ry, rz)
+                else
+                    mirrorRotation = "{0, 0, 0}"
+                end
+
 
                 --local
 
@@ -2564,7 +2575,7 @@ function createMainGuiMenu()
                 end
 
                 local formattedString = string.format(
-                    "createOccupiedVehicleAndMoveOverPath(%s, %s, %s, \"%s\", %s, %s, %s, %s, {%s, %s, %s}, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    "createOccupiedVehicleAndMoveOverPath(%s, %s, %s, \"%s\", %s, %s, %s, %s, {%s, %s, %s}, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                     markerValue:gsub("[%s%(%)]", ""),
                     arguments.pedID or "0",
                     arguments.vehicleID or "411",
@@ -2592,7 +2603,8 @@ function createMainGuiMenu()
                     textPathString,
                     mirrorPath,
                     mirrorOffset,
-                    tostring(endlessVehiclesPeds)
+                    tostring(endlessVehiclesPeds),
+                    mirrorRotation
                 )
 
                 local currentText = DGS:dgsGetText(mainMemo)
@@ -2848,7 +2860,7 @@ function createMainGuiMenu()
                     elseif not tonumber(value) then
                         DGS:dgsSetText(argumentEdit, argumentText)
                     end
-                elseif argumentName == "mirrorPathOffset" then
+                elseif argumentName == "mirrorPathOffset" or argumentName == "mirrorPathRotation" then
                     local value = DGS:dgsGetText(argumentEdit)
                     if value:find(",") then
                         local offsetRange = split(value, ",")
