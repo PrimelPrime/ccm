@@ -20,7 +20,7 @@
                   --------\::/----/----------------\::/----/----------------\::/----/--------
                   ---------\/____/------------------\/____/------------------\/____/---------
                   ---------------------------------------------------------------------------
-# CCM - Copy and Car Movement Tool Version 2.1.0 for MTA:SA
+# CCM - Copy and Car Movement Tool Version 2.3.2 for MTA:SA
 
 An easy tool to add NPC-like moving vehicles to your maps without having to write them yourself!
 
