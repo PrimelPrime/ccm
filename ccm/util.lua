@@ -199,6 +199,9 @@ function simulateWheelRotation(vehicle, direction, speed)
     if not isElement(vehicle) then return end
 
     local currentRotation = getVehicleComponentRotation(vehicle, "wheel_rf_dummy") -- just get any tire
+    if not currentRotation then
+        currentRotation = 0
+    end
     local rotationChange = direction * speed
     local newRotation = currentRotation + rotationChange
 
@@ -360,7 +363,8 @@ function createOccupiedVehicleAndMoveOverPath(
     mirrorPath,
     mirrorOffset,
     endlessVehiclesPeds,
-    mirrorRotation
+    mirrorRotation,
+    searchlightWithoutFollow
 )
 
     --Set default values for optional arguments if not provided
@@ -368,6 +372,7 @@ function createOccupiedVehicleAndMoveOverPath(
     heightOffset = heightOffset or 0 --might be needed for certain vehicles
     destroyVehicle = destroyVehicle or false
     searchlightFollowsPlayer = searchlightFollowsPlayer or false
+    searchlightWithoutFollow = searchlightWithoutFollow or false
     sirenLights = sirenLights or false
     searchlightOffset = searchlightOffset or {0, 0, 0}
     adjustableProperty = adjustableProperty or false
@@ -388,6 +393,19 @@ function createOccupiedVehicleAndMoveOverPath(
     mirrorOffset = mirrorOffset or {0, 0, 0}
     endlessVehiclesPeds = endlessVehiclesPeds or false
     mirrorRotation = mirrorRotation or {0, 0, 0}
+
+    local objectData = nil
+    local effectData = nil
+    local vehicleData = nil
+    local textData = nil
+
+    local overrideVehicleLights = 2
+    local vRotX, vRotY, vRotZ = 0, 0, 0
+    local wheelStates = nil
+    local frontLeft, rearLeft, frontRight, rearRight = nil, nil, nil, nil
+    local wheelSizeAxle, wheelSizeValue = "all_wheels", 1
+    local vehicleSmokeTrail = false
+    local vehicleAlpha = 255
 
     if objectDataPath ~= nil then
         objectData = readDataFromFile(objectDataPath)
@@ -532,13 +550,17 @@ function createOccupiedVehicleAndMoveOverPath(
                 setVehicleWheelStates(instance.vehicle, frontLeft, rearLeft, frontRight, rearRight)
             end
 
-            if vehicleSmokeTrail then
+            if vehicleSmokeTrail and (vehicleID == 512 or vehicleID == 513) then
                 setVehicleSmokeTrailEnabled(instance.vehicle, true)
             end
 
             if vehicleAlpha then
                 setElementAlpha(instance.vehicle, vehicleAlpha)
-                setElementAlpha(instance.ped, vehicleAlpha)
+                if vehicleID == 441 or vehicleID == 464 or vehicleID == 594 or vehicleID == 501 or vehicleID == 465 or vehicleID == 564 then
+                    setElementAlpha(instance.ped, 0)
+                else
+                    setElementAlpha(instance.ped, vehicleAlpha)
+                end
             end
 
             setTimer(function()
@@ -574,14 +596,18 @@ function createOccupiedVehicleAndMoveOverPath(
                 setVehicleWheelStates(instance.vehicle, frontLeft, rearLeft, frontRight, rearRight)
             end
 
-            if vehicleSmokeTrail then
+            if vehicleSmokeTrail and (vehicleID == 512 or vehicleID == 513) then
                 setVehicleSmokeTrailEnabled(instance.vehicle, true)
             end
 
             if vehicleAlpha then
                 setElementAlpha(instance.vehicle, vehicleAlpha)
                 if endlessVehiclesPeds then
-                    setElementAlpha(instance.ped, vehicleAlpha)
+                    if vehicleID == 441 or vehicleID == 464 or vehicleID == 594 or vehicleID == 501 or vehicleID == 465 or vehicleID == 564 then
+                        setElementAlpha(instance.ped, 0)
+                    else
+                        setElementAlpha(instance.ped, vehicleAlpha)
+                    end
                 end
             end
         end
@@ -589,7 +615,11 @@ function createOccupiedVehicleAndMoveOverPath(
         --Create searchlight for vehicle
         if searchlightFollowsPlayer then
             instance.searchlight = createSearchLight(path[1].x + searchlightOffset.x, path[1].y + searchlightOffset.y, path[1].z + searchlightOffset.z, 0, 0, 0, 0, 15, true)
-            instance.followsPlayer = searchlightFollowsPlayer
+            if searchlightWithoutFollow then
+                instance.followsPlayer = false
+            else
+                instance.followsPlayer = true
+            end
             attachSearchlight(instance.searchlight, instance.vehicle, {x = searchlightOffset.x, y = searchlightOffset.y, z = searchlightOffset.z})
             table_insert(searchlights, instance)
         end
@@ -739,7 +769,7 @@ function createOccupiedVehicleAndMoveOverPath(
             if destroyVehicle then
                 instance.isBeingDestroyed = true
                 destroyInstance(instance)
-                if not endlessVehicles then
+                if not endlessVehicles and marker ~= nil then
                     setTimer(function() 
                         if activeInstancesTracker[instanceTrackerID] then
                             local newInstance = createElementInstance(path, endlessVehiclesGroup) 
@@ -872,8 +902,31 @@ function createOccupiedVehicleAndMoveOverPath(
         end
     end
 
+    local function startOccupiedVehicleMovementWithoutMarker()
+        if activeInstancesTracker[instanceTrackerID] then
+            for i, instance in ipairs(activeInstancesTracker[instanceTrackerID]) do
+                if not instance.isMoving and not instance.isBeingDestroyed then
+                    instance.isMoving = true
+                    if not reversePath then
+                        if isElement(instance.ped) then
+                            setPedControlState(instance.ped, "accelerate", true)
+                        end
+                    else
+                        if isElement(instance.ped) then
+                            setPedControlState(instance.ped, "brake_reverse", true)
+                        end
+                    end
+                    moveVehicleAlongPath(instance, path, 1)
+                    return
+                end
+            end
+        end
+    end
+
     if marker ~= nil then
         addEventHandler("onClientMarkerHit", marker, startOccupiedVehicleMovement)
+    else
+        startOccupiedVehicleMovementWithoutMarker()
     end
 end
 
@@ -888,7 +941,13 @@ function renderAttachedSearchlights()
                 for j, instance in ipairs(activeInstances) do
                     if instance.followsPlayer and isElement(instance.searchlight) and isElement(instance.vehicle) then
                         local px, py, pz = getElementPosition(localPlayer)
-                        setSearchLightEndPosition(i, px, py, pz)
+                        local offsetX = (math.sin(getTickCount() / 500) * 2)
+                        local offsetY = (math.cos(getTickCount() / 500) * 2)
+                        setSearchLightEndPosition(i, px + offsetX, py + offsetY, pz)
+                    else
+                        local offsetX = (math.sin(getTickCount() / 500) * 2)
+                        local offsetY = (math.cos(getTickCount() / 500) * 2)
+                        setSearchLightEndPosition(i, x + offsetX, y + offsetY, z - 10)
                     end
                 end
             end
