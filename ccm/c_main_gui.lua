@@ -80,6 +80,7 @@ local additionalArguments = {
     {name = "mirrorPath", toolTip = "Mirrors the path on the given axis. Default is none.", type = "selectable", text = "Select Axis"},
     {name = "mirrorPathOffset", toolTip = "The offset for the mirrored path. {0, 0, 0} by default.\nNote: Use the same format as in the edit box to set the offset (excluding Off:). E.g. 0, 0, 0 would be x = 0, y = 0, z = 0.", type = "float", text = "Off: 0, 0, 0"},
     {name = "mirrorPathRotation", toolTip = "The rotation for the mirrored path. {0, 0, 0} by default.\nNote: Use the same format as in the edit box to set the rotation (excluding Rot:). E.g. 0, 0, 0 would be rx = 0, ry = 0, rz = 0.", type = "float", text = "Rot: 0, 0, 0"},
+    {name = "searchlightWithoutFollow", toolTip = "If set to true the searchlight will not follow the player. False by default.", type = "boolean", text = "Searchlight w/o follow"},
 }
 
 local keybinds = {}
@@ -2479,6 +2480,7 @@ function createMainGuiMenu()
                 local reversePath = DGS:dgsSwitchButtonGetState(switchButtons[10])
                 local endlessVehicles = DGS:dgsSwitchButtonGetState(switchButtons[11])
                 local endlessVehiclesGroup = DGS:dgsComboBoxGetSelectedItem(selectables[2])
+                local searchlightWithoutFollow = DGS:dgsSwitchButtonGetState(switchButtons[13])
                 if endlessVehiclesGroup == -1 then
                     endlessVehiclesGroup = "\"default\""
                 else
@@ -2575,7 +2577,7 @@ function createMainGuiMenu()
                 end
 
                 local formattedString = string.format(
-                    "createOccupiedVehicleAndMoveOverPath(%s, %s, %s, \"%s\", %s, %s, %s, %s, {%s, %s, %s}, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
+                    "createOccupiedVehicleAndMoveOverPath(%s, %s, %s, \"%s\", %s, %s, %s, %s, {%s, %s, %s}, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
                     markerValue:gsub("[%s%(%)]", ""),
                     arguments.pedID or "0",
                     arguments.vehicleID or "411",
@@ -2604,7 +2606,8 @@ function createMainGuiMenu()
                     mirrorPath,
                     mirrorOffset,
                     tostring(endlessVehiclesPeds),
-                    mirrorRotation
+                    mirrorRotation,
+                    tostring(searchlightWithoutFollow)
                 )
 
                 local currentText = DGS:dgsGetText(mainMemo)
