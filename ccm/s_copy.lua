@@ -168,8 +168,11 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
                         local nodeName = xmlNodeGetName(node)
                         if nodeName == "file" then
                             local src = xmlNodeGetAttribute(node, "src")
-                            if src == filePath then
-                                fileExistsInMeta[filePath] = true
+
+                            for _, path in ipairs(paths) do
+                                if src == path then
+                                    fileExistsInMeta[path] = true
+                                end
                             end
                             for _, objectDataPath in ipairs(objectDataPaths) do
                                 if src == objectDataPath then
@@ -206,12 +209,11 @@ addEventHandler("onImportPaths", root, function(memoText, mapName, stringFunctio
                         elseif nodeName == "min_mta_version" then
                             local clientVer = xmlNodeGetAttribute(node, "client")
                             local serverVer = xmlNodeGetAttribute(node, "server")
-                            if serverVer then
+                            if not serverVer then
+                                xmlNodeSetAttribute(node, "server", "1.5.8-9.20957")
+                            end
+                            if not clientVer then
                                 xmlNodeSetAttribute(node, "client", "1.3.0-9.04482")
-                            else
-                                local newMinVersionNode = xmlCreateChild(xml, "min_mta_version")
-                                xmlNodeSetAttribute(newMinVersionNode, "server", "1.5.8-9.20957")
-                                xmlNodeSetAttribute(newMinVersionNode, "client", "1.3.0-9.04482")
                             end
                         end
                     end
