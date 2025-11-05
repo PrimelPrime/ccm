@@ -15,6 +15,8 @@ local setPedAnalogControlState = setPedAnalogControlState
 local createPed = createPed
 local createVehicle = createVehicle
 local createObject = createObject
+local setElementDimension = setElementDimension
+local getElementDimension = getElementDimension
 local createSearchLight = createSearchLight
 local setVehicleSirensOn = setVehicleSirensOn
 local setVehicleLandingGearDown = setVehicleLandingGearDown
@@ -538,8 +540,10 @@ function createOccupiedVehicleAndMoveOverPath(
 
         if not endlessVehicles then
             instance.ped = createPed(pedID, path[1].x, path[1].y, path[1].z)
+            setElementDimension(instance.ped, getElementDimension(localPlayer))
 
             instance.vehicle = createVehicle(vehicleID, path[1].x, path[1].y, path[1].z + heightOffset, path[1].rx + (vRotX or 0), path[1].ry + (vRotY or 0), path[1].rz + (vRotZ or 0))
+            setElementDimension(instance.vehicle, getElementDimension(localPlayer))
             setVehicleEngineState(instance.vehicle, true)
             setVehicleOverrideLights(instance.vehicle, overrideVehicleLights or 2)
             warpPedIntoVehicle(instance.ped, instance.vehicle)
@@ -581,12 +585,14 @@ function createOccupiedVehicleAndMoveOverPath(
             
             vehicleID = endlessVehiclesGroup[math_random(#endlessVehiclesGroup)]
             instance.vehicle = createVehicle(vehicleID, path[1].x, path[1].y, path[1].z + heightOffset, path[1].rx + (vRotX or 0), path[1].ry + (vRotY or 0), path[1].rz + (vRotZ or 0))
+            setElementDimension(instance.vehicle, getElementDimension(localPlayer))
             setVehicleEngineState(instance.vehicle, true)
             setVehicleOverrideLights(instance.vehicle, overrideVehicleLights or 2)
 
             if endlessVehiclesPeds then
                 pedID = pedIds[math_random(#pedIds)]
                 instance.ped = createPed(pedID, path[1].x, path[1].y, path[1].z)
+                setElementDimension(instance.ped, getElementDimension(localPlayer))
                 warpPedIntoVehicle(instance.ped, instance.vehicle)
             end
 
@@ -693,8 +699,10 @@ function createOccupiedVehicleAndMoveOverPath(
                     if endlessVehicles then
                         local pedID = pedIds[math_random(#pedIds)]
                         ped = createPed(pedID, path[1].x + data.offsetX, path[1].y + data.offsetY, path[1].z + data.offsetZ)
+                        setElementDimension(ped, getElementDimension(instance.vehicle))
                     else
                         ped = createPed(data.PedID or 0, path[1].x + data.offsetX, path[1].y + data.offsetY, path[1].z + data.offsetZ)
+                        setElementDimension(ped, getElementDimension(instance.vehicle))
                     end
 
                     warpPedIntoVehicle(ped, attachedVehicle)
@@ -709,6 +717,7 @@ function createOccupiedVehicleAndMoveOverPath(
                     setElementCollisionsEnabled(object, false)
                     setElementDoubleSided(object, true)
                     setObjectBreakable(object, false)
+                    setElementDimension(object, getElementDimension(instance.vehicle))
 
                     setObjectScale(object, data.scaleX, data.scaleY, data.scaleZ)
                     attachElements(object, instance.vehicle, data.offsetX, data.offsetY, data.offsetZ, data.rotX, data.rotY, data.rotZ)
